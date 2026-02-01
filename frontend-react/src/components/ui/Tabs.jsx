@@ -1,0 +1,47 @@
+import React, { useState } from 'react';
+import { cn } from '../../lib/utils';
+import { motion } from 'framer-motion';
+
+export function Tabs({ tabs, defaultTab, onChange, children }) {
+  const [activeTab, setActiveTab] = useState(defaultTab || tabs[0]?.id);
+
+  const handleTabChange = (tabId) => {
+    setActiveTab(tabId);
+    onChange?.(tabId);
+  };
+
+  return (
+    <div className="w-full space-y-6">
+      <div className="flex p-1 bg-zinc-900/50 backdrop-blur-sm rounded-2xl border border-white/5 w-fit">
+        {tabs.map((tab) => {
+           const isActive = activeTab === tab.id;
+           return (
+            <button
+              key={tab.id}
+              onClick={() => handleTabChange(tab.id)}
+              className={cn(
+                "relative flex items-center gap-2 px-6 py-2.5 text-sm font-medium rounded-xl transition-all duration-300 z-10",
+                isActive ? "text-white" : "text-zinc-400 hover:text-zinc-200"
+              )}
+            >
+              {isActive && (
+                <motion.div
+                  layoutId="activeTab"
+                  className="absolute inset-0 bg-zinc-800 rounded-xl shadow-lg border border-white/5"
+                  transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                />
+              )}
+              <span className="relative z-10 flex items-center gap-2">
+                {tab.icon}
+                {tab.label}
+              </span>
+            </button>
+          )
+        })}
+      </div>
+      <div className="animate-fade-in relative">
+        {children(activeTab)}
+      </div>
+    </div>
+  );
+}

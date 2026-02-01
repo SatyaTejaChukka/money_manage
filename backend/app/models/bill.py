@@ -1,0 +1,15 @@
+from sqlalchemy import Column, String, Numeric, Integer, DateTime, Boolean
+from uuid import uuid4
+from app.core.database import Base
+
+class Bill(Base):
+    __tablename__ = "bills"
+
+    id = Column(String, primary_key=True, default=lambda: str(uuid4()))
+    user_id = Column(String, index=True, nullable=False)
+    name = Column(String, nullable=False)
+    amount_estimated = Column(Numeric(14,2), nullable=False)
+    due_day = Column(Integer, nullable=False) # 1-31
+    frequency = Column(String, default="monthly")
+    autopay_enabled = Column(Boolean, default=False)
+    last_paid_at = Column(DateTime, nullable=True)

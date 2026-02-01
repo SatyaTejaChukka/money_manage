@@ -1,0 +1,15 @@
+fastapi
+uvicorn[standard]
+pydantic
+pydantic-settings
+sqlalchemy[asyncio]
+asyncpg
+alembic
+python-jose[cryptography]
+passlib[argon2]
+celery[redis]
+redis
+python-multipart
+email-validator
+httpx
+pytest
