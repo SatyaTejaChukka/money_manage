@@ -37,7 +37,7 @@ A comprehensive, self-hosted personal finance management system built with FastA
 1. **Clone & Setup:**
 
    ```bash
-   git clone <repo_url>
+   git clone https://github.com/SatyaTejaChukka/money_manage
    cd money_manage
    ./setup.ps1
    ```
@@ -75,6 +75,3 @@ npm install
 npm run dev
 ```
 
-## 📄 License
-
-MIT
