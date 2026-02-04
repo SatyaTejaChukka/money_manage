@@ -10,34 +10,12 @@ class Settings(BaseSettings):
     DEBUG: bool = True
     
     # CORS
-    BACKEND_CORS_ORIGINS: List[str] = []
-
-    @validator("BACKEND_CORS_ORIGINS", pre=True)
-    def assemble_cors_origins(cls, v: Union[str, List[str]]) -> List[str]:
-        if isinstance(v, list):
-            return [str(i) for i in v]
-
-        if isinstance(v, str):
-            raw = v.strip()
-
-            # Accept JSON list or Python list string forms.
-            if raw.startswith("["):
-                parsed = None
-                try:
-                    parsed = json.loads(raw)
-                except Exception:
-                    try:
-                        parsed = ast.literal_eval(raw)
-                    except Exception:
-                        parsed = None
-
-                if isinstance(parsed, list):
-                    return [str(i) for i in parsed]
-
-            # Fallback: comma-separated string
-            return [part.strip().strip('"').strip("'") for part in raw.split(",") if part.strip()]
-
-        raise ValueError(v)
+    BACKEND_CORS_ORIGINS: List[str] = [
+        "http://localhost:3000",
+        "http://localhost:5173",
+        "http://localhost:5174",
+        "http://localhost:8000"
+    ]
 
     # Database
     POSTGRES_SERVER: str = "db"

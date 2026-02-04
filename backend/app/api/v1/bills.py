@@ -30,6 +30,13 @@ async def create_bill(
     db.add(bill)
     await db.commit()
     await db.refresh(bill)
+    
+    # Load the bill with category relationship
+    from sqlalchemy.orm import selectinload
+    result = await db.execute(
+        select(Bill).options(selectinload(Bill.category)).where(Bill.id == bill.id)
+    )
+    bill = result.scalar_one()
     return bill
 
 @router.get("/", response_model=List[BillResponse])
@@ -40,7 +47,10 @@ async def read_bills(
     """
     Retrieve all bills.
     """
-    result = await db.execute(select(Bill).filter(Bill.user_id == current_user.id))
+    from sqlalchemy.orm import selectinload
+    result = await db.execute(
+        select(Bill).options(selectinload(Bill.category)).filter(Bill.user_id == current_user.id)
+    )
     bills = result.scalars().all()
     return bills
 

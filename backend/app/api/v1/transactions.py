@@ -10,6 +10,7 @@ from app.api import deps
 from app.core.database import get_db
 from app.models.user import User
 from app.models.transaction import Transaction
+from app.models.bill import Bill
 from app.schemas.transaction import TransactionCreate, TransactionUpdate, TransactionResponse
 
 router = APIRouter()
@@ -38,7 +39,7 @@ async def create_transaction(
         
     db.add(transaction)
     await db.commit()
-    await db.refresh(transaction)
+    await db.refresh(transaction, ['category'])
     return transaction
 
 @router.get("/", response_model=List[TransactionResponse])
@@ -114,4 +115,56 @@ async def delete_transaction(
 
     await db.delete(transaction)
     await db.commit()
+    return transaction
+
+@router.post("/{transaction_id}/complete", response_model=TransactionResponse)
+async def complete_transaction(
+    transaction_id: str,
+    current_user: Annotated[User, Depends(deps.get_current_user)],
+    db: Annotated[AsyncSession, Depends(get_db)]
+) -> Any:
+    """
+    Mark a pending transaction as completed (paid).
+    """
+    result = await db.execute(
+        select(Transaction).options(selectinload(Transaction.category)).filter(
+            Transaction.id == transaction_id,
+            Transaction.user_id == current_user.id
+        )
+    )
+    transaction = result.scalars().first()
+    if not transaction:
+        raise HTTPException(status_code=404, detail="Transaction not found")
+    
+    if transaction.status != "pending":
+        raise HTTPException(status_code=400, detail="Transaction is not pending")
+    
+    transaction.status = "completed"
+    transaction.occurred_at = datetime.utcnow() # Update to actual payment time
+    db.add(transaction)
+    await db.commit()
+    await db.refresh(transaction)
+    
+    # Update bill/subscription last_paid_at if linked
+    if transaction.bill_id:
+        bill_result = await db.execute(select(Bill).filter(Bill.id == transaction.bill_id))
+        bill = bill_result.scalars().first()
+        if bill:
+            bill.last_paid_at = datetime.utcnow()
+            db.add(bill)
+            await db.commit()
+    elif transaction.subscription_id:
+        from app.models.subscription import Subscription
+        sub_result = await db.execute(select(Subscription).filter(Subscription.id == transaction.subscription_id))
+        sub = sub_result.scalars().first()
+        if sub:
+            from dateutil.relativedelta import relativedelta
+            # Update next billing date based on cycle
+            if sub.billing_cycle == "monthly":
+                sub.next_billing_date = datetime.utcnow() + relativedelta(months=1)
+            elif sub.billing_cycle == "yearly":
+                sub.next_billing_date = datetime.utcnow() + relativedelta(years=1)
+            db.add(sub)
+            await db.commit()
+    
     return transaction

@@ -1,5 +1,7 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 from app.core.config import settings
 
 app = FastAPI(
@@ -7,6 +9,16 @@ app = FastAPI(
     openapi_url=f"{settings.API_V1_STR}/openapi.json",
     debug=settings.DEBUG
 )
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    print(f"DEBUG: Validation error on {request.url}")
+    print(f"DEBUG: Errors: {exc.errors()}")
+    print(f"DEBUG: Body: {exc.body}")
+    return JSONResponse(
+        status_code=422,
+        content={"detail": exc.errors(), "body": str(exc.body)},
+    )
 
 from fastapi.staticfiles import StaticFiles
 import os
@@ -40,7 +52,7 @@ def health_check():
 def root():
     return {"message": "Welcome to MoneyOS API"}
 
-from app.api.v1 import auth, income, categories, budgets, transactions, bills, savings, subscriptions, users, dashboard
+from app.api.v1 import auth, income, categories, budgets, transactions, bills, savings, subscriptions, users, dashboard, notifications
 
 app.include_router(auth.router, prefix=f"{settings.API_V1_STR}/auth", tags=["auth"])
 app.include_router(income.router, prefix=f"{settings.API_V1_STR}/income", tags=["income"])
@@ -52,3 +64,4 @@ app.include_router(savings.router, prefix=f"{settings.API_V1_STR}/goals", tags=[
 app.include_router(subscriptions.router, prefix=f"{settings.API_V1_STR}/subscriptions", tags=["subscriptions"])
 app.include_router(users.router, prefix=f"{settings.API_V1_STR}/users", tags=["users"])
 app.include_router(dashboard.router, prefix=f"{settings.API_V1_STR}/dashboard", tags=["dashboard"])
+app.include_router(notifications.router, prefix=f"{settings.API_V1_STR}/notifications", tags=["notifications"])

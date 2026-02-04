@@ -1,4 +1,5 @@
-from sqlalchemy import Column, String, Numeric, Integer, DateTime, Boolean
+from sqlalchemy import Column, String, Numeric, Integer, DateTime, Boolean, ForeignKey
+from sqlalchemy.orm import relationship
 from uuid import uuid4
 from app.core.database import Base
 
@@ -13,3 +14,7 @@ class Bill(Base):
     frequency = Column(String, default="monthly")
     autopay_enabled = Column(Boolean, default=False)
     last_paid_at = Column(DateTime, nullable=True)
+    category_id = Column(String, ForeignKey("budget_categories.id"), nullable=True)
+    
+    # Relationship
+    category = relationship("BudgetCategory", foreign_keys=[category_id])

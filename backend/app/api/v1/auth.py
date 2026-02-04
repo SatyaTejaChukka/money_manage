@@ -20,23 +20,36 @@ async def create_user(
     """
     Create new user.
     """
+    print(f"DEBUG: Received signup request with email: {user_in.email}")
+    
     result = await db.execute(select(User).filter(User.email == user_in.email))
     existing_user = result.scalars().first()
     if existing_user:
+        print(f"DEBUG: User {user_in.email} already exists")
         raise HTTPException(
             status_code=400,
             detail="The user with this email already exists in the system.",
         )
     
-    user = User(
-        email=user_in.email,
-        password_hash=security.get_password_hash(user_in.password),
-        is_active=True
-    )
-    db.add(user)
-    await db.commit()
-    await db.refresh(user)
-    return user
+    print(f"DEBUG: Creating new user {user_in.email}")
+    try:
+        user = User(
+            email=user_in.email,
+            password_hash=security.get_password_hash(user_in.password),
+            is_active=True
+        )
+        db.add(user)
+        await db.commit()
+        await db.refresh(user)
+        print(f"DEBUG: User {user_in.email} created successfully with ID {user.id}")
+        return user
+    except Exception as e:
+        print(f"DEBUG: Error creating user: {str(e)}")
+        await db.rollback()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error creating user: {str(e)}"
+        )
 
 @router.post("/login", response_model=Token)
 async def login_access_token(

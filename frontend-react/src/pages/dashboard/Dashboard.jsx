@@ -4,6 +4,7 @@ import { FinancialHealthScore } from '../../components/dashboard/FinancialHealth
 import { SpendingChart } from '../../components/dashboard/SpendingChart.jsx';
 import { RecentActivity } from '../../components/dashboard/RecentActivity.jsx';
 import { InsightsPanel } from '../../components/dashboard/InsightsPanel.jsx';
+import { NotificationBell } from '../../components/notifications/NotificationBell.jsx';
 import { Wallet, TrendingUp, PiggyBank, ArrowUpRight } from 'lucide-react';
 import { useAuth } from '../../lib/auth.jsx';
 import { dashboardService } from '../../services/dashboard.js';
@@ -66,7 +67,8 @@ export default function Dashboard() {
           </h1>
           <p className="text-zinc-400 mt-1">Here's what's happening with your finance today.</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex items-center gap-3">
+           <NotificationBell />
            <button 
              onClick={() => navigate('/dashboard/transactions')} // Placeholder action
              className="px-4 py-2 bg-white text-black font-semibold rounded-xl hover:bg-zinc-200 transition-colors shadow-lg shadow-white/10 text-sm"

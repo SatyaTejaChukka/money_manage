@@ -1,4 +1,5 @@
-from sqlalchemy import Column, String, Numeric, Integer, DateTime, Boolean
+from sqlalchemy import Column, String, Numeric, Integer, DateTime, Boolean, ForeignKey
+from sqlalchemy.orm import relationship
 from uuid import uuid4
 from datetime import datetime
 from app.core.database import Base
@@ -13,4 +14,8 @@ class Subscription(Base):
     billing_cycle = Column(String, default="monthly") # monthly, yearly
     next_billing_date = Column(DateTime, nullable=True)
     usage_count = Column(Integer, default=0) # For "Cost per usage" analysis
-    active = Column(Boolean, default=True)
+    is_active = Column(Boolean, default=True)
+    category_id = Column(String, ForeignKey("budget_categories.id"), nullable=True)
+    
+    # Relationship
+    category = relationship("BudgetCategory", foreign_keys=[category_id])

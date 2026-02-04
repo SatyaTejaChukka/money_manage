@@ -26,6 +26,13 @@ async def create_subscription(
     db.add(sub)
     await db.commit()
     await db.refresh(sub)
+    
+    # Load subscription with category relationship
+    from sqlalchemy.orm import selectinload
+    result = await db.execute(
+        select(Subscription).options(selectinload(Subscription.category)).where(Subscription.id == sub.id)
+    )
+    sub = result.scalar_one()
     return sub
 
 @router.get("/", response_model=List[SubscriptionResponse])
@@ -33,7 +40,10 @@ async def read_subscriptions(
     current_user: Annotated[User, Depends(deps.get_current_user)],
     db: Annotated[AsyncSession, Depends(get_db)]
 ) -> Any:
-    result = await db.execute(select(Subscription).filter(Subscription.user_id == current_user.id))
+    from sqlalchemy.orm import selectinload
+    result = await db.execute(
+        select(Subscription).options(selectinload(Subscription.category)).filter(Subscription.user_id == current_user.id)
+    )
     return result.scalars().all()
 
 @router.put("/{sub_id}", response_model=SubscriptionResponse)

@@ -15,5 +15,10 @@ class Transaction(Base):
     description = Column(String, nullable=True)
     occurred_at = Column(DateTime, default=datetime.utcnow)
     created_at = Column(DateTime, default=datetime.utcnow)
+    
+    # Bill tracking fields
+    status = Column(String, default="completed") # pending, completed, cancelled
+    bill_id = Column(String, ForeignKey("bills.id"), nullable=True)
+    subscription_id = Column(String, ForeignKey("subscriptions.id"), nullable=True)
 
     category = relationship("BudgetCategory", back_populates="transactions")

@@ -8,6 +8,8 @@ import Transactions from './pages/dashboard/Transactions.jsx';
 import Analytics from './pages/dashboard/Analytics.jsx';
 import Budget from './pages/dashboard/Budget.jsx';
 import Goals from './pages/dashboard/Goals.jsx';
+import Bills from './pages/dashboard/Bills.jsx';
+import Subscriptions from './pages/dashboard/Subscriptions.jsx';
 import Settings from './pages/dashboard/Settings.jsx';
 import { useAuth } from './lib/auth.jsx';
 
@@ -81,6 +83,8 @@ export default function App() {
         <Route path="analytics" element={<Analytics />} />
         <Route path="budget" element={<Budget />} />
         <Route path="goals" element={<Goals />} />
+        <Route path="bills" element={<Bills />} />
+        <Route path="subscriptions" element={<Subscriptions />} />
         <Route path="settings" element={<Settings />} />
       </Route>
 

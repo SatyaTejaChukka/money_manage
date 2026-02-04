@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Input } from '../ui/Input.jsx';
 import { Button } from '../ui/Button.jsx';
 import { Select } from '../ui/Select.jsx';
-import { Search, Filter, Trash2, ArrowRight, Edit } from 'lucide-react';
+import { Search, Filter, Trash2, ArrowRight, Edit, CheckCircle, Clock } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { transactionService } from '../../services/transactions.js';
 import { Modal } from '../ui/Modal.jsx';
@@ -18,6 +18,7 @@ export function TransactionTable({ refreshTrigger }) {
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('all');
 
   // Debounce search
   useEffect(() => {
@@ -28,10 +29,10 @@ export function TransactionTable({ refreshTrigger }) {
     return () => clearTimeout(timer);
   }, [search]);
 
-  // Reset page on type filter change
+  // Reset page on filter change
   useEffect(() => {
       setPage(1);
-  }, [typeFilter]);
+  }, [typeFilter, statusFilter]);
 
   // Fetch data
   const loadTransactions = async () => {
@@ -41,7 +42,8 @@ export function TransactionTable({ refreshTrigger }) {
             skip: (page - 1) * 10,
             limit: 10,
             ...(debouncedSearch && { search: debouncedSearch }),
-            ...(typeFilter !== 'all' && { type: typeFilter.toUpperCase() })
+            ...(typeFilter !== 'all' && { type: typeFilter.toUpperCase() }),
+            ...(statusFilter !== 'all' && { status: statusFilter })
         };
         const res = await transactionService.getAll(params);
         if (res.length < 10) setHasMore(false);
@@ -56,7 +58,7 @@ export function TransactionTable({ refreshTrigger }) {
 
   useEffect(() => {
     loadTransactions();
-  }, [page, refreshTrigger, debouncedSearch, typeFilter]);
+  }, [page, refreshTrigger, debouncedSearch, typeFilter, statusFilter]);
 
   const [editingTransaction, setEditingTransaction] = useState(null);
 
@@ -76,6 +78,17 @@ export function TransactionTable({ refreshTrigger }) {
           await transactionService.delete(id);
           loadTransactions();
       }
+  };
+
+  const handleMarkAsPaid = async (id, e) => {
+    e.stopPropagation();
+    try {
+      await transactionService.complete(id);
+      loadTransactions();
+    } catch (err) {
+      console.error("Failed to mark as paid", err);
+      alert("Failed to mark transaction as paid");
+    }
   };
 
   const [viewingTransaction, setViewingTransaction] = useState(null);
@@ -105,6 +118,17 @@ export function TransactionTable({ refreshTrigger }) {
                 onChange={setTypeFilter}
             />
           </div>
+          <div className="w-40">
+            <Select 
+                options={[
+                    { value: 'all', label: 'All Status' },
+                    { value: 'pending', label: 'Pending' },
+                    { value: 'completed', label: 'Completed' }
+                ]}
+                value={statusFilter}
+                onChange={setStatusFilter}
+            />
+          </div>
       </div>
 
       <div className="rounded-2xl border border-white/5 bg-zinc-900/30 overflow-hidden backdrop-blur-md">
@@ -114,6 +138,7 @@ export function TransactionTable({ refreshTrigger }) {
               <tr>
                 <th className="h-12 px-6 font-medium">Date</th>
                 <th className="h-12 px-6 font-medium">Description</th>
+                <th className="h-12 px-6 font-medium">Status</th>
                 <th className="h-12 px-6 font-medium">Type</th>
                 <th className="h-12 px-6 font-medium text-right">Amount</th>
                 <th className="h-12 px-6 font-medium"></th>
@@ -121,9 +146,9 @@ export function TransactionTable({ refreshTrigger }) {
             </thead>
             <tbody className="divide-y divide-white/5">
               {loading ? (
-                  <tr><td colSpan="5" className="p-8 text-center text-zinc-500">Loading transactions...</td></tr>
+                  <tr><td colSpan="6" className="p-8 text-center text-zinc-500">Loading transactions...</td></tr>
               ) : data.length === 0 ? (
-                  <tr><td colSpan="5" className="p-8 text-center text-zinc-500">No transactions found.</td></tr>
+                  <tr><td colSpan="6" className="p-8 text-center text-zinc-500">No transactions found.</td></tr>
               ) : (
                 data.map((t) => (
                     <tr 
@@ -145,6 +170,17 @@ export function TransactionTable({ refreshTrigger }) {
                     </td>
                     <td className="p-6">
                         <span className={cn(
+                            "inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium border",
+                            t.status === 'pending'
+                                ? "bg-amber-500/10 text-amber-400 border-amber-500/20" 
+                                : "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                        )}>
+                        {t.status === 'pending' ? <Clock size={12} /> : <CheckCircle size={12} />}
+                        {t.status === 'pending' ? 'Pending' : 'Completed'}
+                        </span>
+                    </td>
+                    <td className="p-6">
+                        <span className={cn(
                             "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border",
                             t.type === 'INCOME' 
                                 ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" 
@@ -160,6 +196,17 @@ export function TransactionTable({ refreshTrigger }) {
                         {t.type === 'INCOME' ? '+' : ''}${parseFloat(t.amount).toFixed(2)}
                     </td>
                     <td className="p-6 text-right whitespace-nowrap">
+                        {t.status === 'pending' && (
+                          <Button 
+                              variant="ghost" 
+                              size="sm"
+                              className="h-8 px-3 text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 mr-2"
+                              onClick={(e) => handleMarkAsPaid(t.id, e)}
+                          >
+                            <CheckCircle size={14} className="mr-1" />
+                            Mark Paid
+                          </Button>
+                        )}
                         <Button 
                             variant="ghost" 
                             size="icon" 

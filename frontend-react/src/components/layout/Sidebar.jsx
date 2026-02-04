@@ -13,12 +13,16 @@ import {
   Menu,
   X,
   CreditCard,
-  BarChart3
+  BarChart3,
+  FileText,
+  Repeat
 } from 'lucide-react';
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Transactions', href: '/dashboard/transactions', icon: Receipt },
+  { name: 'Bills', href: '/dashboard/bills', icon: FileText },
+  { name: 'Subscriptions', href: '/dashboard/subscriptions', icon: Repeat },
   { name: 'Budget', href: '/dashboard/budget', icon: PieChart },
   { name: 'Goals', href: '/dashboard/goals', icon: Target },
   { name: 'Analytics', href: '/dashboard/analytics', icon: BarChart3 },

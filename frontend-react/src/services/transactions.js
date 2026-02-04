@@ -19,5 +19,10 @@ export const transactionService = {
   delete: async (id) => {
     const response = await api.delete(`/transactions/${id}`);
     return response.data;
+  },
+
+  complete: async (id) => {
+    const response = await api.post(`/transactions/${id}/complete`);
+    return response.data;
   }
 };
