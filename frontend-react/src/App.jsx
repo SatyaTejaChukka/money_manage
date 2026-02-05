@@ -21,7 +21,7 @@ function RequireAuth({ children }) {
       <div className="min-h-screen flex items-center justify-center bg-[#09090b]">
         <div className="flex items-center gap-3 text-zinc-400">
           <div className="w-5 h-5 rounded-full border-2 border-zinc-700 border-t-violet-600 animate-spin" />
-          <span className="text-sm font-medium">Loading MoneyOS...</span>
+          <span className="text-sm font-medium">Loading WealthSync...</span>
         </div>
       </div>
     );

@@ -1,3 +1,6 @@
+# WealthSync - Docker Hub Deployment
+# Run with: docker-compose -f docker-compose.hub.yml up -d
+
 version: '3.8'
 
 services:
@@ -17,16 +20,17 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
 
   redis:
     image: redis:7-alpine
     container_name: wealth_sync_redis
     ports:
       - "6379:6379"
+    restart: unless-stopped
 
   backend:
-    build:
-      context: ./backend
+    image: satyatejachukka/wealthsync-backend:latest
     container_name: wealth_sync_backend
     environment:
       - PROJECT_NAME=WealthSync
@@ -36,6 +40,8 @@ services:
       - POSTGRES_DB=wealth_sync
       - DATABASE_URL=postgresql+asyncpg://postgres:postgres@db/wealth_sync
       - REDIS_URL=redis://redis:6379/0
+      - SECRET_KEY=your-secret-key-change-in-production
+      - BACKEND_CORS_ORIGINS=["http://localhost:3000","http://localhost:80","http://localhost"]
     ports:
       - "8000:8000"
     depends_on:
@@ -43,22 +49,16 @@ services:
         condition: service_healthy
       redis:
         condition: service_started
-    volumes:
-      - ./backend:/app
+    restart: unless-stopped
 
   frontend:
-    build:
-      context: ./frontend-react
+    image: satyatejachukka/wealthsync-frontend:latest
     container_name: wealth_sync_frontend
     ports:
-      - "3000:5173"
-    volumes:
-      - ./frontend-react:/app
-      - /app/node_modules
-    environment:
-      - VITE_API_BASE_URL=http://localhost:8000/api/v1
+      - "80:80"
     depends_on:
       - backend
+    restart: unless-stopped
 
 volumes:
   postgres_data:

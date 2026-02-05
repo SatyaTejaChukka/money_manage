@@ -13,7 +13,8 @@ export function AuthProvider({ children }) {
     const onUnauthorized = () => {
       localStorage.removeItem('token');
       setUser(null);
-      navigate('/login', { replace: true });
+      // Don't force navigate here. RequireAuth will handle protected routes.
+      // This prevents redirecting users from public pages (like Landing) if their stale token fails.
     };
 
     window.addEventListener('auth:unauthorized', onUnauthorized);

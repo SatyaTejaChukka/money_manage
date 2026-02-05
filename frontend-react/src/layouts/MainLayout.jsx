@@ -22,7 +22,7 @@ export default function MainLayout() {
           <div className="w-8 h-8 rounded-lg bg-linear-to-tr from-violet-600 to-indigo-600 flex items-center justify-center">
              <span className="font-bold text-white text-xs">M</span>
           </div>
-          <span className="font-bold text-white tracking-tight">MoneyOS</span>
+          <span className="font-bold text-white tracking-tight">WealthSync</span>
         </div>
         <button 
           onClick={() => setMobileOpen(true)}

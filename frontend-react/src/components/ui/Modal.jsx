@@ -12,7 +12,7 @@ export function Modal({ isOpen, onClose, title, children }) {
         className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fade-in" 
         onClick={onClose}
       />
-      <div className="relative w-full max-w-lg bg-[#09090b] border border-white/10 rounded-2xl shadow-2xl animate-accordion-down overflow-hidden">
+      <div className="relative w-full max-w-lg bg-[#09090b] border border-white/10 rounded-2xl shadow-2xl overflow-visible">
         <div className="flex items-center justify-between p-6 border-b border-white/5">
           <h2 className="text-xl font-semibold text-white tracking-tight">{title}</h2>
           <button 

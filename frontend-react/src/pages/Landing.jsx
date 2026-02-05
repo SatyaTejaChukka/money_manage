@@ -57,10 +57,10 @@ export default function Landing() {
       <header className="fixed top-0 left-0 right-0 z-50 bg-black/50 backdrop-blur-xl border-b border-white/5">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-violet-500 to-indigo-500 rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 bg-linear-to-br from-violet-500 to-indigo-500 rounded-lg flex items-center justify-center">
               <Sparkles className="w-5 h-5 text-white" />
             </div>
-            <span className="text-xl font-bold bg-gradient-to-r from-white to-zinc-300 bg-clip-text text-transparent">MoneyOS</span>
+            <span className="text-xl font-bold bg-linear-to-r from-white to-zinc-300 bg-clip-text text-transparent">WealthSync</span>
           </div>
           <div className="flex gap-3">
             <Button
@@ -72,7 +72,7 @@ export default function Landing() {
             </Button>
             <Button
               onClick={() => navigate('/signup')}
-              className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white shadow-lg shadow-violet-500/30"
+              className="bg-linear-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white shadow-lg shadow-violet-500/30"
             >
               Create account
             </Button>
@@ -89,23 +89,22 @@ export default function Landing() {
               Your Financial Command Center
             </div>
             <h1 className="text-6xl md:text-7xl lg:text-8xl font-bold mb-6 leading-tight">
-              <span className="bg-gradient-to-r from-white via-violet-200 to-indigo-300 bg-clip-text text-transparent">
+              <span className="bg-linear-to-r from-white via-violet-200 to-indigo-300 bg-clip-text text-transparent">
                 Simple personal
               </span>
               <br />
-              <span className="bg-gradient-to-r from-violet-400 via-indigo-400 to-purple-400 bg-clip-text text-transparent">
+              <span className="bg-linear-to-r from-violet-400 via-indigo-400 to-purple-400 bg-clip-text text-transparent">
                 finance tracking.
               </span>
             </h1>
             <p className="text-xl md:text-2xl text-zinc-400 mb-10 max-w-3xl mx-auto leading-relaxed">
               Track income, spending, budgets, goals, and subscriptions with{' '}
               <span className="text-violet-400 font-semibold">automated reminders</span>.{' '}
-              No fake marketing, just a powerful product.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <Button
                 onClick={() => navigate('/signup')}
-                className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white shadow-2xl shadow-violet-500/30 px-8 py-6 text-lg font-semibold rounded-xl group"
+                className="bg-linear-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white shadow-2xl shadow-violet-500/30 px-8 py-6 text-lg font-semibold rounded-xl group"
               >
                 Get started free
                 <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
@@ -126,7 +125,7 @@ export default function Landing() {
       <section className="py-24 px-6 relative">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-white to-zinc-400 bg-clip-text text-transparent">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4 bg-linear-to-r from-white to-zinc-400 bg-clip-text text-transparent">
               Everything you need
             </h2>
             <p className="text-xl text-zinc-400 max-w-2xl mx-auto">
@@ -140,7 +139,7 @@ export default function Landing() {
                 key={i}
                 className="group p-8 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm hover:bg-white/10 hover:border-violet-500/30 transition-all duration-300 hover:scale-105"
               >
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-500 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <div className="w-12 h-12 rounded-xl bg-linear-to-br from-violet-500 to-indigo-500 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                   {feature.icon}
                 </div>
                 <h3 className="text-xl font-semibold mb-2 text-white">{feature.title}</h3>
@@ -160,7 +159,7 @@ export default function Landing() {
                 Take charge of your money
               </h2>
               <p className="text-xl text-zinc-400 mb-8 leading-relaxed">
-                MoneyOS gives you the tools to understand where your money goes, set meaningful goals, and build better financial habits.
+                WealthSync gives you the tools to understand where your money goes, set meaningful goals, and build better financial habits.
               </p>
               <Button
                 onClick={() => navigate('/signup')}
@@ -186,12 +185,12 @@ export default function Landing() {
       {/* CTA Section */}
       <section className="py-24 px-6">
         <div className="max-w-4xl mx-auto text-center">
-          <div className="p-12 rounded-3xl bg-gradient-to-br from-violet-600/20 to-indigo-600/20 border border-violet-500/20 backdrop-blur-xl">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-white to-zinc-300 bg-clip-text text-transparent">
+          <div className="p-12 rounded-3xl bg-linear-to-br from-violet-600/20 to-indigo-600/20 border border-violet-500/20 backdrop-blur-xl">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-linear-to-r from-white to-zinc-300 bg-clip-text text-transparent">
               Ready to get started?
             </h2>
             <p className="text-xl text-zinc-300 mb-8 max-w-2xl mx-auto">
-              Join thousands of users who are taking control of their finances with MoneyOS
+              Join thousands of users who are taking control of their finances with WealthSync
             </p>
             <Button
               onClick={() => navigate('/signup')}
@@ -210,10 +209,10 @@ export default function Landing() {
             <div className="w-8 h-8 bg-linear-to-br from-violet-500 to-indigo-500 rounded-lg flex items-center justify-center">
               <Sparkles className="w-5 h-5 text-white" />
             </div>
-            <span className="text-xl font-bold bg-linear-to-r from-white to-zinc-300 bg-clip-text text-transparent">MoneyOS</span>
+            <span className="text-xl font-bold bg-linear-to-r from-white to-zinc-300 bg-clip-text text-transparent">WealthSync</span>
           </div>
           <p className="text-zinc-500 text-sm">
-            © 2026 MoneyOS. Your financial command center.
+            © 2026 WealthSync. Your financial command center.
           </p>
         </div>
       </footer>

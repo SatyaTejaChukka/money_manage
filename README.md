@@ -1,4 +1,4 @@
-# 💰 MoneyOS - Personal Finance Platform
+# 💰 WealthSync - Personal Finance Platform
 
 A comprehensive, self-hosted personal finance management system built with FastAPI and Next.js.
 
@@ -24,6 +24,16 @@ A comprehensive, self-hosted personal finance management system built with FastA
 - **Database**: PostgreSQL 15 (Async SQLAlchemy)
 - **Frontend**: Next.js 14 (TypeScript + Tailwind)
 - **Infrastructure**: Docker Compose
+
+## 🚀 Deployment
+
+**[👉 Read the Step-by-Step Deployment Guide](DEPLOYMENT.md)**
+
+Supports deployment on:
+
+- **Frontend**: Vercel, Netlify
+- **Backend**: Railway, Render, Fly.io
+- **Database**: Neon, Supabase, ElephantSQL
 
 ## 🏁 Getting Started
 
@@ -74,4 +84,3 @@ cd frontend
 npm install
 npm run dev
 ```
-

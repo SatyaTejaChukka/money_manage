@@ -3,7 +3,7 @@ from celery.schedules import crontab
 from app.core.config import settings
 
 celery = Celery(
-    "moneyos",
+    "wealth_sync",
     broker=f"redis://redis:6379/0",
     backend=f"redis://redis:6379/0"
 )

@@ -40,7 +40,7 @@ export function Sidebar({ mobileOpen, setMobileOpen }) {
             <TrendingUp className="text-white" size={20} />
           </div>
           <span className="text-2xl font-bold bg-linear-to-r from-white to-white/70 bg-clip-text text-transparent tracking-tight">
-            MoneyOS
+            WealthSync
           </span>
         </Link>
       </div>

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { StatsCard } from '../../components/dashboard/StatsCard.jsx';
-import { FinancialHealthScore } from '../../components/dashboard/FinancialHealthScore.jsx';
+import HealthScoreGauge from '../../components/HealthScoreGauge.jsx';
 import { SpendingChart } from '../../components/dashboard/SpendingChart.jsx';
 import { RecentActivity } from '../../components/dashboard/RecentActivity.jsx';
 import { InsightsPanel } from '../../components/dashboard/InsightsPanel.jsx';
@@ -71,8 +71,7 @@ export default function Dashboard() {
            <NotificationBell />
            <button 
              onClick={() => navigate('/dashboard/transactions')} // Placeholder action
-             className="px-4 py-2 bg-white text-black font-semibold rounded-xl hover:bg-zinc-200 transition-colors shadow-lg shadow-white/10 text-sm"
-           >
+             className="px-4 py-2 bg-white text-black font-semibold rounded-xl hover:bg-zinc-200 transition-colors shadow-lg shadow-white/10 text-sm">
             Add Transaction
            </button>
            <button
@@ -129,12 +128,8 @@ export default function Dashboard() {
             onRangeChange={setChartRange}
           />
         </div>
-        <div className="lg:col-span-1 h-[400px]">
-          <FinancialHealthScore 
-            score={summary.health_score.score} 
-            message={summary.health_score.message}
-            color={summary.health_score.color}
-          />
+        <div className="lg:col-span-1">
+          <HealthScoreGauge />
         </div>
       </div>
 

@@ -1,8 +1,30 @@
+import logging
+import os
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+import sentry_sdk
+
 from app.core.config import settings
+from app.core.logging_config import setup_logging
+from app.core.middleware import (
+    SecurityHeadersMiddleware, 
+    RequestContextMiddleware,
+    limiter,
+    RateLimitExceeded,
+    _rate_limit_exceeded_handler
+)
+from app.core.database import engine, Base
+
+# Setup logging
+setup_logging()
+logger = logging.getLogger(__name__)
+
+# Setup Sentry
+if settings.SENTRY_DSN:
+    sentry_sdk.init(dsn=settings.SENTRY_DSN, traces_sample_rate=1.0)
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -10,49 +32,57 @@ app = FastAPI(
     debug=settings.DEBUG
 )
 
-@app.exception_handler(RequestValidationError)
-async def validation_exception_handler(request: Request, exc: RequestValidationError):
-    print(f"DEBUG: Validation error on {request.url}")
-    print(f"DEBUG: Errors: {exc.errors()}")
-    print(f"DEBUG: Body: {exc.body}")
-    return JSONResponse(
-        status_code=422,
-        content={"detail": exc.errors(), "body": str(exc.body)},
-    )
+# Rate limiting
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
-from fastapi.staticfiles import StaticFiles
-import os
+# Middlewares
+app.add_middleware(SecurityHeadersMiddleware)
+app.add_middleware(RequestContextMiddleware)
 
-# Create static directory if not exists
-os.makedirs("app/static/avatars", exist_ok=True)
-
-from app.core.database import engine, Base
-@app.on_event("startup")
-async def startup():
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-
-app.mount("/static", StaticFiles(directory="app/static"), name="static")
-
-# Set all CORS enabled origins
+# CORS
 if settings.BACKEND_CORS_ORIGINS:
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=[str(origin) for origin in settings.BACKEND_CORS_ORIGINS],
+        allow_origins=settings.BACKEND_CORS_ORIGINS,
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
     )
 
+# Static files
+os.makedirs("app/static/avatars", exist_ok=True)
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
+
+@app.on_event("startup")
+async def startup():
+    logger.info("Starting up application...")
+    # Create tables
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    logger.info("Database tables created/verified")
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    logger.error(f"Validation error on {request.url}: {exc.errors()}")
+    return JSONResponse(
+        status_code=422,
+        content={"detail": exc.errors(), "body": str(exc.body)},
+    )
+
 @app.get("/health")
 def health_check():
-    return {"status": "ok", "app_name": settings.PROJECT_NAME}
+    return {"status": "ok", "app_name": settings.PROJECT_NAME, "env": settings.ENVIRONMENT}
 
 @app.get("/")
 def root():
-    return {"message": "Welcome to MoneyOS API"}
+    return {"message": "Welcome to WealthSync API"}
 
-from app.api.v1 import auth, income, categories, budgets, transactions, bills, savings, subscriptions, users, dashboard, notifications
+# Routes
+from app.api.v1 import (
+    auth, income, categories, budgets, transactions, 
+    bills, savings, subscriptions, users, dashboard, notifications, health
+)
 
 app.include_router(auth.router, prefix=f"{settings.API_V1_STR}/auth", tags=["auth"])
 app.include_router(income.router, prefix=f"{settings.API_V1_STR}/income", tags=["income"])
@@ -65,3 +95,4 @@ app.include_router(subscriptions.router, prefix=f"{settings.API_V1_STR}/subscrip
 app.include_router(users.router, prefix=f"{settings.API_V1_STR}/users", tags=["users"])
 app.include_router(dashboard.router, prefix=f"{settings.API_V1_STR}/dashboard", tags=["dashboard"])
 app.include_router(notifications.router, prefix=f"{settings.API_V1_STR}/notifications", tags=["notifications"])
+app.include_router(health.router, prefix=f"{settings.API_V1_STR}/health", tags=["health"])

@@ -64,7 +64,7 @@ export default function Login() {
             <div className="w-12 h-12 rounded-xl bg-linear-to-r from-violet-600 to-indigo-600 flex items-center justify-center shadow-xl shadow-violet-500/30">
               <TrendingUp className="text-white" size={24} />
             </div>
-            <span className="text-3xl font-bold bg-linear-to-r from-white to-zinc-300 bg-clip-text text-transparent">MoneyOS</span>
+            <span className="text-3xl font-bold bg-linear-to-r from-white to-zinc-300 bg-clip-text text-transparent">WealthSync</span>
           </Link>
           <h1 className="text-2xl font-bold text-white mb-2">Welcome back!</h1>
           <p className="text-zinc-400">Sign in to continue</p>

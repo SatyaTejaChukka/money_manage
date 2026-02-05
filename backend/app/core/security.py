@@ -15,7 +15,7 @@ def create_access_token(subject: Union[str, Any], expires_delta: timedelta = Non
         expire = datetime.utcnow() + timedelta(minutes=15)
     
     to_encode = {"sub": str(subject), "exp": expire}
-    encoded_jwt = jwt.encode(to_encode, "secret_key_change_this", algorithm=ALGORITHM)
+    encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
