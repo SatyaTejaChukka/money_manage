@@ -1,5 +1,6 @@
 from typing import Optional
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
+from app.core.config import settings
 
 class Token(BaseModel):
     access_token: str
@@ -12,7 +13,7 @@ class UserBase(BaseModel):
     email: EmailStr
 
 class UserCreate(UserBase):
-    password: str
+    password: str = Field(min_length=settings.PASSWORD_MIN_LENGTH, max_length=128)
 
 class UserResponse(UserBase):
     id: str

@@ -22,14 +22,17 @@ build/
 
 # Node / frontend
 node_modules/
-frontend-react/node_modules/
-frontend-react/dist/
+frontend/node_modules/
+frontend/dist/
 
 # Logs
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Backups / exports
+backups/
 
 # OS
 .DS_Store

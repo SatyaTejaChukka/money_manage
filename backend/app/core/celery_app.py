@@ -4,8 +4,8 @@ from app.core.config import settings
 
 celery = Celery(
     "wealth_sync",
-    broker=f"redis://redis:6379/0",
-    backend=f"redis://redis:6379/0"
+    broker=settings.REDIS_URL,
+    backend=settings.REDIS_URL
 )
 
 celery.conf.update(

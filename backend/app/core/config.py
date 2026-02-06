@@ -1,29 +1,58 @@
 from typing import List, Union
 import json
-import ast
-from pydantic import AnyHttpUrl, PostgresDsn, validator
+from pydantic import PostgresDsn, validator
 from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     PROJECT_NAME: str = "WealthSync"
     API_V1_STR: str = "/api/v1"
-    DEBUG: bool = True
+    DEBUG: bool = False
+    ENVIRONMENT: str = "development"
+    ENABLE_DOCS: bool = True
+    AUTO_CREATE_TABLES: bool = True
     
     # Cors
     BACKEND_CORS_ORIGINS: List[str] = []
+    ALLOWED_HOSTS: List[str] = []
 
     @validator("BACKEND_CORS_ORIGINS", pre=True)
     def assemble_cors_origins(cls, v: Union[str, List[str]]) -> Union[List[str], str]:
-        if isinstance(v, str) and not v.startswith("["):
-            return [i.strip() for i in v.split(",")]
-        elif isinstance(v, (list, str)):
+        if isinstance(v, str):
+            v = v.strip()
+            if not v:
+                return []
+            if v.startswith("["):
+                try:
+                    return json.loads(v)
+                except json.JSONDecodeError:
+                    pass
+            return [i.strip() for i in v.split(",") if i.strip()]
+        if isinstance(v, list):
+            return v
+        raise ValueError(v)
+
+    @validator("ALLOWED_HOSTS", pre=True)
+    def assemble_allowed_hosts(cls, v: Union[str, List[str]]) -> Union[List[str], str]:
+        if isinstance(v, str):
+            v = v.strip()
+            if not v:
+                return []
+            if v.startswith("["):
+                try:
+                    return json.loads(v)
+                except json.JSONDecodeError:
+                    pass
+            return [i.strip() for i in v.split(",") if i.strip()]
+        if isinstance(v, list):
             return v
         raise ValueError(v)
 
     # Security
     SECRET_KEY: str
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8  # 8 days
-    ENVIRONMENT: str = "development"
+    PASSWORD_MIN_LENGTH: int = 8
+    RATE_LIMIT_LOGIN: str = "5/minute"
+    RATE_LIMIT_SIGNUP: str = "3/minute"
 
     # Database
     POSTGRES_SERVER: str = "db"
@@ -38,10 +67,15 @@ class Settings(BaseSettings):
 
     # Monitoring
     SENTRY_DSN: str | None = None
+    REDIS_URL: str = "redis://redis:6379/0"
 
     @validator("DATABASE_URL", pre=True)
     def assemble_db_connection(cls, v: str | None, values: dict[str, any]) -> any:
-        if isinstance(v, str):
+        if isinstance(v, str) and v:
+            if v.startswith("postgres://"):
+                return v.replace("postgres://", "postgresql+asyncpg://", 1)
+            if v.startswith("postgresql://") and "+asyncpg" not in v:
+                return v.replace("postgresql://", "postgresql+asyncpg://", 1)
             return v
         return PostgresDsn.build(
             scheme="postgresql+asyncpg",

@@ -33,10 +33,16 @@ This guide will help you deploy the WealthSync application to production using V
 | `API_V1_STR`                  | `/api/v1`                                | API Prefix     |
 | `ENVIRONMENT`                 | `production`                             | Environment    |
 | `DEBUG`                       | `False`                                  | Disable Debug  |
+| `ENABLE_DOCS`                 | `False`                                  | Disable docs   |
+| `AUTO_CREATE_TABLES`          | `False`                                  | Use Alembic    |
 | `SECRET_KEY`                  | `<Generate a random 32-char string>`     | Security Key   |
 | `DATABASE_URL`                | `<Your Neon Connection String>`          | Database URL   |
 | `BACKEND_CORS_ORIGINS`        | `["https://your-vercel-app.vercel.app"]` | Allow Frontend |
+| `ALLOWED_HOSTS`               | `["your-backend-host.com"]`              | Host allowlist |
 | `ACCESS_TOKEN_EXPIRE_MINUTES` | `11520`                                  | Token Expiry   |
+| `RATE_LIMIT_LOGIN`            | `5/minute`                               | Login limiter  |
+| `RATE_LIMIT_SIGNUP`           | `3/minute`                               | Signup limiter |
+| `REDIS_URL`                   | `<optional>`                             | Celery/Redis   |
 
 5. Under **Settings** > **Root Directory**, set it to `/backend`.
 6. Railway will automatically detect the `Procfile` and deploy.
@@ -51,7 +57,7 @@ This guide will help you deploy the WealthSync application to production using V
 3. Import your `money_manage` repository.
 4. Configure **Build Settings**:
    - **Framework Preset**: Vite
-   - **Root Directory**: `frontend-react`
+   - **Root Directory**: `frontend`
    - **Build Command**: `npm run build:prod`
    - **Output Directory**: `dist`
    - **Install Command**: `npm install`
