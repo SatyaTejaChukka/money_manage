@@ -125,3 +125,37 @@ Deploy WealthSync with **Vercel** (frontend), **Render** (backend), and **Supaba
 | **Frontend blank page**        | Verify `VITE_API_BASE_URL` points to the correct backend URL with `/api/v1` suffix           |
 | **Login/Signup 422 errors**    | Ensure `SECRET_KEY` is set on the backend; check request payload matches schema              |
 | **Health check fails**         | Hit `https://your-backend.onrender.com/health` — should return `{"status": "healthy"}`       |
+
+---
+
+## Alternative: Self-Hosted (Docker Hub)
+
+If you prefer to self-host instead of using Render/Vercel, pre-built Docker images are available:
+
+```bash
+# Download the compose file
+curl -O https://raw.githubusercontent.com/SatyaTejaChukka/money_manage/main/docker-compose.hub.yml
+
+# Start the full stack (PostgreSQL + Redis + Backend + Frontend)
+docker-compose -f docker-compose.hub.yml up -d
+```
+
+**Important**: Edit the `SECRET_KEY` in the compose file before running in production.
+
+| Service          | URL                                           |
+| ---------------- | --------------------------------------------- |
+| Frontend         | [http://localhost](http://localhost)           |
+| Backend API      | [http://localhost:8000](http://localhost:8000) |
+| API Docs         | [http://localhost:8000/docs](http://localhost:8000/docs) |
+
+```bash
+# Stop the stack
+docker-compose -f docker-compose.hub.yml down
+
+# Stop and delete all data
+docker-compose -f docker-compose.hub.yml down -v
+```
+
+Docker Hub images:
+- [`satyatejachukka/wealthsync-backend`](https://hub.docker.com/r/satyatejachukka/wealthsync-backend)
+- [`satyatejachukka/wealthsync-frontend`](https://hub.docker.com/r/satyatejachukka/wealthsync-frontend)
