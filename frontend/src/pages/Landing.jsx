@@ -55,40 +55,41 @@ export default function Landing() {
     <div className="min-h-screen bg-black text-white overflow-x-hidden">
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-black/50 backdrop-blur-xl border-b border-white/5">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-linear-to-br from-violet-500 to-indigo-500 rounded-lg flex items-center justify-center">
               <Sparkles className="w-5 h-5 text-white" />
             </div>
-            <span className="text-xl font-bold bg-linear-to-r from-white to-zinc-300 bg-clip-text text-transparent">WealthSync</span>
+            <span className="text-lg sm:text-xl font-bold bg-linear-to-r from-white to-zinc-300 bg-clip-text text-transparent">WealthSync</span>
           </div>
-          <div className="flex gap-3">
+          <div className="flex gap-2 sm:gap-3">
             <Button
               variant="outline"
               onClick={() => navigate('/login')}
-              className="border-zinc-700 hover:bg-zinc-800 text-white"
+              className="border-zinc-700 hover:bg-zinc-800 text-white text-xs sm:text-sm px-3 sm:px-4"
             >
               Sign in
             </Button>
             <Button
               onClick={() => navigate('/signup')}
-              className="bg-linear-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white shadow-lg shadow-violet-500/30"
+              className="bg-linear-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white shadow-lg shadow-violet-500/30 text-xs sm:text-sm px-3 sm:px-4"
             >
-              Create account
+              <span className="hidden sm:inline">Create account</span>
+              <span className="sm:hidden">Sign up</span>
             </Button>
           </div>
         </div>
       </header>
 
       {/* Hero Section */}
-      <section className="relative pt-32 pb-20 px-6">
+      <section className="relative pt-28 sm:pt-32 pb-16 sm:pb-20 px-4 sm:px-6">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 mb-6 px-4 py-2 bg-violet-500/10 border border-violet-500/20 rounded-full text-violet-400 text-sm font-medium backdrop-blur-sm">
+            <div className="inline-flex items-center gap-2 mb-6 px-3 sm:px-4 py-2 bg-violet-500/10 border border-violet-500/20 rounded-full text-violet-400 text-xs sm:text-sm font-medium backdrop-blur-sm">
               <Sparkles className="w-4 h-4" />
               Your Financial Command Center
             </div>
-            <h1 className="text-6xl md:text-7xl lg:text-8xl font-bold mb-6 leading-tight">
+            <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-bold mb-6 leading-tight">
               <span className="bg-linear-to-r from-white via-violet-200 to-indigo-300 bg-clip-text text-transparent">
                 Simple personal
               </span>
@@ -97,7 +98,7 @@ export default function Landing() {
                 finance tracking.
               </span>
             </h1>
-            <p className="text-xl md:text-2xl text-zinc-400 mb-10 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-lg sm:text-xl md:text-2xl text-zinc-400 mb-10 max-w-3xl mx-auto leading-relaxed">
               Track income, spending, budgets, goals, and subscriptions with{' '}
               <span className="text-violet-400 font-semibold">automated reminders</span>.{' '}
             </p>
@@ -122,10 +123,10 @@ export default function Landing() {
       </section>
 
       {/* Features Grid */}
-      <section className="py-24 px-6 relative">
+      <section className="py-16 sm:py-24 px-4 sm:px-6 relative">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4 bg-linear-to-r from-white to-zinc-400 bg-clip-text text-transparent">
+          <div className="text-center mb-12 sm:mb-16">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 bg-linear-to-r from-white to-zinc-400 bg-clip-text text-transparent">
               Everything you need
             </h2>
             <p className="text-xl text-zinc-400 max-w-2xl mx-auto">
@@ -151,11 +152,11 @@ export default function Landing() {
       </section>
 
       {/* Benefits Section */}
-      <section className="py-24 px-6">
+      <section className="py-16 sm:py-24 px-4 sm:px-6">
         <div className="max-w-6xl mx-auto">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div>
-              <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-linear-to-r from-white to-zinc-300 bg-clip-text text-transparent">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6 bg-linear-to-r from-white to-zinc-300 bg-clip-text text-transparent">
                 Take charge of your money
               </h2>
               <p className="text-xl text-zinc-400 mb-8 leading-relaxed">
@@ -183,10 +184,10 @@ export default function Landing() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-24 px-6">
+      <section className="py-16 sm:py-24 px-4 sm:px-6">
         <div className="max-w-4xl mx-auto text-center">
-          <div className="p-12 rounded-3xl bg-linear-to-br from-violet-600/20 to-indigo-600/20 border border-violet-500/20 backdrop-blur-xl">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-linear-to-r from-white to-zinc-300 bg-clip-text text-transparent">
+          <div className="p-6 sm:p-12 rounded-3xl bg-linear-to-br from-violet-600/20 to-indigo-600/20 border border-violet-500/20 backdrop-blur-xl">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6 bg-linear-to-r from-white to-zinc-300 bg-clip-text text-transparent">
               Ready to get started?
             </h2>
             <p className="text-xl text-zinc-300 mb-8 max-w-2xl mx-auto">
@@ -203,7 +204,7 @@ export default function Landing() {
       </section>
 
       {/* Footer */}
-      <footer className="py-12 px-6 border-t border-white/5">
+      <footer className="py-8 sm:py-12 px-4 sm:px-6 border-t border-white/5">
         <div className="max-w-7xl mx-auto text-center">
           <div className="flex items-center justify-center gap-2 mb-4">
             <div className="w-8 h-8 bg-linear-to-br from-violet-500 to-indigo-500 rounded-lg flex items-center justify-center">

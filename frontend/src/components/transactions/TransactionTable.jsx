@@ -95,10 +95,9 @@ export function TransactionTable({ refreshTrigger }) {
 
   return (
     <div className="space-y-4">
-       {/* Filters (Simplified for now) */}
-      <div className="flex items-center gap-4">
-          {/* ... existing filters ... */}
-          <div className="relative flex-1 max-w-sm">
+       {/* Filters */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
+          <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" size={18} />
             <Input 
                 placeholder="Search description..." 
@@ -107,31 +106,117 @@ export function TransactionTable({ refreshTrigger }) {
                 onChange={(e) => setSearch(e.target.value)}
             />
           </div>
-          <div className="w-40">
-            <Select 
-                options={[
-                    { value: 'all', label: 'All Types' },
-                    { value: 'income', label: 'Income' },
-                    { value: 'expense', label: 'Expense' }
-                ]}
-                value={typeFilter}
-                onChange={setTypeFilter}
-            />
-          </div>
-          <div className="w-40">
-            <Select 
-                options={[
-                    { value: 'all', label: 'All Status' },
-                    { value: 'pending', label: 'Pending' },
-                    { value: 'completed', label: 'Completed' }
-                ]}
-                value={statusFilter}
-                onChange={setStatusFilter}
-            />
+          <div className="flex gap-3">
+            <div className="flex-1 sm:w-40">
+              <Select 
+                  options={[
+                      { value: 'all', label: 'All Types' },
+                      { value: 'income', label: 'Income' },
+                      { value: 'expense', label: 'Expense' }
+                  ]}
+                  value={typeFilter}
+                  onChange={setTypeFilter}
+              />
+            </div>
+            <div className="flex-1 sm:w-40">
+              <Select 
+                  options={[
+                      { value: 'all', label: 'All Status' },
+                      { value: 'pending', label: 'Pending' },
+                      { value: 'completed', label: 'Completed' }
+                  ]}
+                  value={statusFilter}
+                  onChange={setStatusFilter}
+              />
+            </div>
           </div>
       </div>
 
-      <div className="rounded-2xl border border-white/5 bg-zinc-900/30 overflow-hidden backdrop-blur-md">
+      {/* Mobile Card View */}
+      <div className="md:hidden space-y-3">
+        {loading ? (
+          <div className="p-8 text-center text-zinc-500">Loading transactions...</div>
+        ) : data.length === 0 ? (
+          <div className="p-8 text-center text-zinc-500">No transactions found.</div>
+        ) : (
+          data.map((t) => (
+            <div 
+              key={t.id}
+              className="rounded-xl border border-white/5 bg-zinc-900/30 p-4 backdrop-blur-md space-y-3 cursor-pointer active:bg-white/5 transition-colors"
+              onClick={() => setViewingTransaction(t)}
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-white truncate">{t.description || "Untitled Transaction"}</p>
+                  <p className="text-xs text-zinc-500 mt-0.5">{new Date(t.occurred_at).toLocaleDateString()}</p>
+                </div>
+                <span className={cn(
+                  "text-base font-bold whitespace-nowrap",
+                  t.type === 'INCOME' ? "text-emerald-400" : "text-white"
+                )}>
+                  {t.type === 'INCOME' ? '+' : ''}${parseFloat(t.amount).toFixed(2)}
+                </span>
+              </div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className={cn(
+                  "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium border",
+                  t.type === 'INCOME'
+                    ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                    : "bg-rose-500/10 text-rose-400 border-rose-500/20"
+                )}>
+                  {t.type}
+                </span>
+                <span className={cn(
+                  "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium border",
+                  t.status === 'pending'
+                    ? "bg-amber-500/10 text-amber-400 border-amber-500/20"
+                    : "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                )}>
+                  {t.status === 'pending' ? <Clock size={10} /> : <CheckCircle size={10} />}
+                  {t.status === 'pending' ? 'Pending' : 'Completed'}
+                </span>
+                {t.category && (
+                  <div className="flex items-center gap-1 text-[10px] text-zinc-400">
+                    <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: t.category.color || '#71717a' }} />
+                    {t.category.name}
+                  </div>
+                )}
+              </div>
+              <div className="flex items-center gap-2 pt-1 border-t border-white/5 justify-end">
+                {t.status === 'pending' && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 px-2 text-xs text-emerald-400 hover:bg-emerald-500/10"
+                    onClick={(e) => handleMarkAsPaid(t.id, e)}
+                  >
+                    <CheckCircle size={12} className="mr-1" /> Paid
+                  </Button>
+                )}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 text-zinc-500 hover:text-white"
+                  onClick={(e) => { e.stopPropagation(); setEditingTransaction(t); }}
+                >
+                  <Edit size={14} />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 text-zinc-500 hover:text-red-400"
+                  onClick={(e) => { e.stopPropagation(); handleDelete(t.id); }}
+                >
+                  <Trash2 size={14} />
+                </Button>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Desktop Table View */}
+      <div className="hidden md:block rounded-2xl border border-white/5 bg-zinc-900/30 overflow-hidden backdrop-blur-md">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead className="bg-white/5 border-b border-white/5 text-zinc-400">

@@ -122,8 +122,8 @@ export default function Bills() {
   };
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="space-y-6 animate-slide-up">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold text-white">Bills</h1>
           <p className="text-zinc-400 mt-1">Manage your recurring bills</p>
@@ -134,14 +134,81 @@ export default function Bills() {
             setFormData({ name: '', amount: '', due_day: '', category_id: '', autopay_enabled: false });
             setShowModal(true);
           }}
-          className="bg-linear-to-r from-violet-600 to-indigo-600"
+          className="bg-linear-to-r from-violet-600 to-indigo-600 w-full sm:w-auto"
         >
           <Plus size={18} className="mr-2" />
           Add Bill
         </Button>
       </div>
 
-      <div className="rounded-2xl border border-white/5 bg-zinc-900/30 overflow-hidden backdrop-blur-md">
+      {/* Mobile Card View */}
+      <div className="md:hidden space-y-3">
+        {loading ? (
+          <div className="p-8 text-center text-zinc-500">Loading bills...</div>
+        ) : bills.length === 0 ? (
+          <div className="p-8 text-center text-zinc-500">No bills found. Add your first bill!</div>
+        ) : (
+          bills.map((bill) => (
+            <div key={bill.id} className="rounded-xl border border-white/5 bg-zinc-900/30 p-4 backdrop-blur-md space-y-3">
+              <div className="flex items-start justify-between">
+                <div>
+                  <h3 className="font-medium text-white">{bill.name}</h3>
+                  <p className="text-xs text-zinc-500 mt-0.5 flex items-center gap-1">
+                    <Calendar size={12} />
+                    Due day {bill.due_day}
+                  </p>
+                </div>
+                <span className="text-lg font-bold text-white">${parseFloat(bill.amount_estimated).toFixed(2)}</span>
+              </div>
+              <div className="flex items-center gap-3 flex-wrap">
+                {bill.category && (
+                  <div className="flex items-center gap-1.5 text-xs text-zinc-300">
+                    <span className="w-2 h-2 rounded-full" style={{ backgroundColor: bill.category.color }} />
+                    {bill.category.name}
+                  </div>
+                )}
+                {bill.autopay_enabled ? (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                    <CheckCircle size={10} /> Autopay
+                  </span>
+                ) : null}
+                <span className="text-xs text-zinc-500">
+                  {bill.last_paid_at ? `Paid ${new Date(bill.last_paid_at).toLocaleDateString()}` : 'Never paid'}
+                </span>
+              </div>
+              <div className="flex items-center gap-2 pt-1 border-t border-white/5">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 px-3 text-emerald-400 hover:bg-emerald-500/10 flex-1"
+                  onClick={() => handleMarkPaid(bill.id)}
+                >
+                  <CheckCircle size={14} className="mr-1" /> Paid
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-zinc-500 hover:text-white"
+                  onClick={() => handleEdit(bill)}
+                >
+                  <Edit size={16} />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-zinc-500 hover:text-red-400"
+                  onClick={() => handleDelete(bill.id)}
+                >
+                  <Trash2 size={16} />
+                </Button>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Desktop Table View */}
+      <div className="hidden md:block rounded-2xl border border-white/5 bg-zinc-900/30 overflow-hidden backdrop-blur-md">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead className="bg-white/5 border-b border-white/5 text-zinc-400">

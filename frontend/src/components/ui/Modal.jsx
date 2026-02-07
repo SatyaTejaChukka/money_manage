@@ -12,9 +12,9 @@ export function Modal({ isOpen, onClose, title, children }) {
         className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fade-in" 
         onClick={onClose}
       />
-      <div className="relative w-full max-w-lg bg-[#09090b] border border-white/10 rounded-2xl shadow-2xl overflow-visible">
-        <div className="flex items-center justify-between p-6 border-b border-white/5">
-          <h2 className="text-xl font-semibold text-white tracking-tight">{title}</h2>
+      <div className="relative w-full max-w-lg max-h-[90vh] bg-[#09090b] border border-white/10 rounded-2xl shadow-2xl flex flex-col">
+        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-white/5 shrink-0">
+          <h2 className="text-lg sm:text-xl font-semibold text-white tracking-tight">{title}</h2>
           <button 
             onClick={onClose}
             className="p-2 text-zinc-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
@@ -22,7 +22,7 @@ export function Modal({ isOpen, onClose, title, children }) {
             <X size={20} />
           </button>
         </div>
-        <div className="p-6">
+        <div className="p-4 sm:p-6 overflow-y-auto">
           {children}
         </div>
       </div>

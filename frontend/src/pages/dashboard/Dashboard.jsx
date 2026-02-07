@@ -67,18 +67,20 @@ export default function Dashboard() {
           </h1>
           <p className="text-zinc-400 mt-1">Here's what's happening with your finance today.</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
            <NotificationBell />
            <button 
-             onClick={() => navigate('/dashboard/transactions')} // Placeholder action
-             className="px-4 py-2 bg-white text-black font-semibold rounded-xl hover:bg-zinc-200 transition-colors shadow-lg shadow-white/10 text-sm">
-            Add Transaction
+             onClick={() => navigate('/dashboard/transactions')}
+             className="px-3 sm:px-4 py-2 bg-white text-black font-semibold rounded-xl hover:bg-zinc-200 transition-colors shadow-lg shadow-white/10 text-xs sm:text-sm">
+            <span className="hidden sm:inline">Add Transaction</span>
+            <span className="sm:hidden">+ Add</span>
            </button>
            <button
              onClick={() => navigate('/dashboard/analytics')}
-             className="px-4 py-2 bg-zinc-800 text-white font-semibold rounded-xl hover:bg-zinc-700 transition-colors border border-zinc-700 text-sm"
+             className="px-3 sm:px-4 py-2 bg-zinc-800 text-white font-semibold rounded-xl hover:bg-zinc-700 transition-colors border border-zinc-700 text-xs sm:text-sm"
            >
-            View Reports
+            <span className="hidden sm:inline">View Reports</span>
+            <span className="sm:hidden">Reports</span>
            </button>
         </div>
       </div>
@@ -121,7 +123,7 @@ export default function Dashboard() {
 
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 h-[400px]">
+        <div className="lg:col-span-2 h-[300px] sm:h-[400px]">
           <SpendingChart 
             data={summary.spending_chart} 
             range={chartRange}

@@ -101,8 +101,8 @@ export default function Subscriptions() {
   };
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="space-y-6 animate-slide-up">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold text-white">Subscriptions</h1>
           <p className="text-zinc-400 mt-1">Manage your recurring subscriptions</p>
@@ -113,14 +113,86 @@ export default function Subscriptions() {
             setFormData({ name: '', amount: '', billing_cycle: 'monthly', category_id: '' });
             setShowModal(true);
           }}
-          className="bg-linear-to-r from-violet-600 to-indigo-600"
+          className="bg-linear-to-r from-violet-600 to-indigo-600 w-full sm:w-auto"
         >
           <Plus size={18} className="mr-2" />
           Add Subscription
         </Button>
       </div>
 
-      <div className="rounded-2xl border border-white/5 bg-zinc-900/30 overflow-hidden backdrop-blur-md">
+      {/* Mobile Card View */}
+      <div className="md:hidden space-y-3">
+        {loading ? (
+          <div className="p-8 text-center text-zinc-500">Loading subscriptions...</div>
+        ) : subscriptions.length === 0 ? (
+          <div className="p-8 text-center text-zinc-500">No subscriptions found. Add your first subscription!</div>
+        ) : (
+          subscriptions.map((sub) => (
+            <div key={sub.id} className="rounded-xl border border-white/5 bg-zinc-900/30 p-4 backdrop-blur-md space-y-3">
+              <div className="flex items-start justify-between">
+                <div>
+                  <h3 className="font-medium text-white">{sub.name}</h3>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className={cn(
+                      "inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border",
+                      sub.billing_cycle === 'monthly'
+                        ? "bg-blue-500/10 text-blue-400 border-blue-500/20"
+                        : "bg-purple-500/10 text-purple-400 border-purple-500/20"
+                    )}>
+                      {sub.billing_cycle === 'monthly' ? 'Monthly' : 'Yearly'}
+                    </span>
+                    {sub.is_active ? (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                        <CheckCircle size={10} /> Active
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-zinc-500/10 text-zinc-400 border border-zinc-500/20">
+                        Inactive
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <span className="text-lg font-bold text-white">${parseFloat(sub.amount).toFixed(2)}</span>
+              </div>
+              <div className="flex items-center gap-3 flex-wrap text-xs">
+                {sub.category && (
+                  <div className="flex items-center gap-1.5 text-zinc-300">
+                    <span className="w-2 h-2 rounded-full" style={{ backgroundColor: sub.category.color }} />
+                    {sub.category.name}
+                  </div>
+                )}
+                {sub.next_billing_date && (
+                  <span className="text-zinc-500 flex items-center gap-1">
+                    <Calendar size={12} />
+                    Next: {new Date(sub.next_billing_date).toLocaleDateString()}
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center gap-2 pt-1 border-t border-white/5 justify-end">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-zinc-500 hover:text-white"
+                  onClick={() => handleEdit(sub)}
+                >
+                  <Edit size={16} />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-zinc-500 hover:text-red-400"
+                  onClick={() => handleDelete(sub.id)}
+                >
+                  <Trash2 size={16} />
+                </Button>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Desktop Table View */}
+      <div className="hidden md:block rounded-2xl border border-white/5 bg-zinc-900/30 overflow-hidden backdrop-blur-md">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead className="bg-white/5 border-b border-white/5 text-zinc-400">

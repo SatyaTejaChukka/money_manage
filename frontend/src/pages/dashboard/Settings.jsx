@@ -121,7 +121,7 @@ export default function Settings() {
                     <CardDescription>Update your personal details here.</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="flex items-center gap-6 mb-8">
+                    <div className="flex flex-col sm:flex-row items-center sm:items-center gap-4 sm:gap-6 mb-8">
                       <div className="relative">
                         {profileData.avatar_url ? (
                           <img 

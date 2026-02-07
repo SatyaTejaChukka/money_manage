@@ -55,12 +55,12 @@ export default function Analytics() {
             onRangeChange={setChartRange}
         />
 
-        <Card className="h-[400px] bg-zinc-900/40 border-white/5">
+        <Card className="h-[350px] sm:h-[400px] bg-zinc-900/40 border-white/5">
             <CardHeader>
                 <CardTitle>Spending by Category (This Month)</CardTitle>
             </CardHeader>
             <CardContent>
-                <div className="h-[300px] w-full min-w-0">
+                <div className="h-[240px] sm:h-[300px] w-full min-w-0">
                     <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                         <BarChart data={data.category_chart}>
                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#27272a" />
