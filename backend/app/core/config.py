@@ -1,6 +1,7 @@
-from typing import List, Union
+from typing import Any, List, Union
 import json
-from pydantic import PostgresDsn, validator
+from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
+from pydantic import PostgresDsn, ValidationInfo, field_validator
 from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
@@ -15,8 +16,11 @@ class Settings(BaseSettings):
     BACKEND_CORS_ORIGINS: List[str] = []
     ALLOWED_HOSTS: List[str] = []
 
-    @validator("BACKEND_CORS_ORIGINS", pre=True)
-    def assemble_cors_origins(cls, v: Union[str, List[str]]) -> Union[List[str], str]:
+    @field_validator("BACKEND_CORS_ORIGINS", mode="before")
+    @classmethod
+    def assemble_cors_origins(cls, v: Union[str, List[str], None]) -> List[str]:
+        if v is None:
+            return []
         if isinstance(v, str):
             v = v.strip()
             if not v:
@@ -31,8 +35,11 @@ class Settings(BaseSettings):
             return v
         raise ValueError(v)
 
-    @validator("ALLOWED_HOSTS", pre=True)
-    def assemble_allowed_hosts(cls, v: Union[str, List[str]]) -> Union[List[str], str]:
+    @field_validator("ALLOWED_HOSTS", mode="before")
+    @classmethod
+    def assemble_allowed_hosts(cls, v: Union[str, List[str], None]) -> List[str]:
+        if v is None:
+            return []
         if isinstance(v, str):
             v = v.strip()
             if not v:
@@ -69,20 +76,35 @@ class Settings(BaseSettings):
     SENTRY_DSN: str | None = None
     REDIS_URL: str = "redis://redis:6379/0"
 
-    @validator("DATABASE_URL", pre=True)
-    def assemble_db_connection(cls, v: str | None, values: dict[str, any]) -> any:
+    @field_validator("DATABASE_URL", mode="before")
+    @classmethod
+    def assemble_db_connection(cls, v: str | None, info: ValidationInfo) -> str | PostgresDsn:
         if isinstance(v, str) and v:
+            v = v.strip()
             if v.startswith("postgres://"):
-                return v.replace("postgres://", "postgresql+asyncpg://", 1)
+                v = v.replace("postgres://", "postgresql+asyncpg://", 1)
             if v.startswith("postgresql://") and "+asyncpg" not in v:
-                return v.replace("postgresql://", "postgresql+asyncpg://", 1)
+                v = v.replace("postgresql://", "postgresql+asyncpg://", 1)
+
+            # SQLAlchemy asyncpg passes query params as kwargs to asyncpg.connect().
+            # asyncpg accepts `ssl=...`, not `sslmode=...`.
+            parts = urlsplit(v)
+            query_params = dict(parse_qsl(parts.query, keep_blank_values=True))
+            if "sslmode" in query_params and "ssl" not in query_params:
+                query_params["ssl"] = query_params["sslmode"]
+            if "sslmode" in query_params:
+                del query_params["sslmode"]
+            normalized_query = urlencode(query_params)
+            v = urlunsplit((parts.scheme, parts.netloc, parts.path, normalized_query, parts.fragment))
             return v
+
+        data = info.data
         return PostgresDsn.build(
             scheme="postgresql+asyncpg",
-            username=values.get("POSTGRES_USER"),
-            password=values.get("POSTGRES_PASSWORD"),
-            host=values.get("POSTGRES_SERVER"),
-            path=f"{values.get('POSTGRES_DB') or ''}",
+            username=data.get("POSTGRES_USER"),
+            password=data.get("POSTGRES_PASSWORD"),
+            host=data.get("POSTGRES_SERVER"),
+            path=f"{data.get('POSTGRES_DB') or ''}",
         )
 
     class Config:
