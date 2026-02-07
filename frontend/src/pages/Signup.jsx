@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../lib/api.js';
+import { useAuth } from '../lib/auth.jsx';
 import { Button } from '../components/ui/Button.jsx';
 import { Input } from '../components/ui/Input.jsx';
 import { Alert } from '../components/ui/Alert.jsx';
@@ -14,6 +15,7 @@ export default function Signup() {
   const [isLoading, setIsLoading] = useState(false);
 
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -32,8 +34,8 @@ export default function Signup() {
     setIsLoading(true);
 
     try {
-      await api.post('/auth/signup', { email, password });
-      navigate('/login');
+      const res = await api.post('/auth/signup', { email, password });
+      await login(res.data.access_token, '/dashboard');
     } catch (err) {
       const detail = err?.response?.data?.detail;
       setError(detail || 'Signup failed. Please try again.');

@@ -6,6 +6,7 @@ import { Plus, Trash2, AlertCircle } from 'lucide-react';
 import { Modal } from '../../components/ui/Modal.jsx';
 import { BudgetRuleForm } from '../../components/budget/BudgetRuleForm.jsx';
 import { cn } from '../../lib/utils';
+import { useToast } from '../../components/ui/Toast.jsx';
 
 
 export default function Budget() {
@@ -14,6 +15,7 @@ export default function Budget() {
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const toast = useToast();
 
   useEffect(() => {
       const fetchData = async () => {
@@ -36,8 +38,15 @@ export default function Budget() {
 
   const handleDeleteRule = async (id) => {
       if(confirm('Delete this budget rule?')) {
-          await budgetService.deleteRule(id);
-          setRefreshTrigger(p => p+1);
+          setRules((prev) => prev.filter((r) => r.id !== id));
+          try {
+              await budgetService.deleteRule(id);
+              toast.success('Budget rule deleted');
+          } catch (err) {
+              console.error('Failed to delete rule', err);
+              toast.error('Failed to delete rule');
+              setRefreshTrigger(p => p+1);
+          }
       }
   };
 
@@ -46,8 +55,9 @@ export default function Budget() {
           await budgetService.createRule(data);
           setIsModalOpen(false);
           setRefreshTrigger(p => p+1);
+          toast.success('Budget rule created');
       } catch (err) {
-        alert("Failed to create rule. Make sure Category ID is valid.");
+        toast.error('Failed to create rule. Check category ID.');
       }
   };
 

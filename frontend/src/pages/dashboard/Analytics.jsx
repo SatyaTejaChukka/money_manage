@@ -61,7 +61,7 @@ export default function Analytics() {
             </CardHeader>
             <CardContent>
                 <div className="h-[300px] w-full min-w-0">
-                    <ResponsiveContainer width="100%" height="100%">
+                    <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                         <BarChart data={data.category_chart}>
                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#27272a" />
                             <XAxis 

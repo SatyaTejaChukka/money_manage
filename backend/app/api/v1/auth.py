@@ -17,7 +17,7 @@ from app.schemas.auth import UserCreate, UserResponse, Token
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
-@router.post("/signup", response_model=UserResponse, status_code=201)
+@router.post("/signup", response_model=Token, status_code=201)
 @limiter.limit(settings.RATE_LIMIT_SIGNUP)
 async def create_user(
     request: Request,
@@ -25,7 +25,7 @@ async def create_user(
     db: Annotated[AsyncSession, Depends(get_db)]
 ) -> Any:
     """
-    Create new user.
+    Create new user and return access token.
     """
     result = await db.execute(select(User).filter(User.email == user_in.email))
     existing_user = result.scalars().first()
@@ -46,7 +46,14 @@ async def create_user(
         await db.commit()
         await db.refresh(user)
         logger.info("User created successfully")
-        return user
+        access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+        return {
+            "access_token": security.create_access_token(
+                user.id,
+                expires_delta=access_token_expires
+            ),
+            "token_type": "bearer",
+        }
     except Exception as e:
         logger.exception("Error creating user")
         await db.rollback()

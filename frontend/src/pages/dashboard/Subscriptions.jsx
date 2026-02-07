@@ -7,6 +7,7 @@ import { Plus, Edit, Trash2, Calendar, CheckCircle } from 'lucide-react';
 import { subscriptionService } from '../../services/subscriptions.js';
 import { categoryService } from '../../services/categories.js';
 import { cn } from '../../lib/utils';
+import { useToast } from '../../components/ui/Toast.jsx';
 
 export default function Subscriptions() {
   const [subscriptions, setSubscriptions] = useState([]);
@@ -20,6 +21,7 @@ export default function Subscriptions() {
     billing_cycle: 'monthly',
     category_id: ''
   });
+  const toast = useToast();
 
   useEffect(() => {
     loadSubscriptions();
@@ -66,9 +68,10 @@ export default function Subscriptions() {
       setEditingSub(null);
       setFormData({ name: '', amount: '', billing_cycle: 'monthly', category_id: '' });
       loadSubscriptions();
+      toast.success(editingSub ? 'Subscription updated' : 'Subscription added');
     } catch (err) {
       console.error('Failed to save subscription', err);
-      alert('Failed to save subscription');
+      toast.error('Failed to save subscription');
     }
   };
 
@@ -85,11 +88,14 @@ export default function Subscriptions() {
 
   const handleDelete = async (id) => {
     if (confirm('Are you sure you want to delete this subscription?')) {
+      setSubscriptions((prev) => prev.filter((s) => s.id !== id));
       try {
         await subscriptionService.delete(id);
-        loadSubscriptions();
+        toast.success('Subscription deleted');
       } catch (err) {
         console.error('Failed to delete subscription', err);
+        toast.error('Failed to delete subscription. Reverting...');
+        loadSubscriptions();
       }
     }
   };

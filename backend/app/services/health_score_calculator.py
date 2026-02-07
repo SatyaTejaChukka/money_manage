@@ -144,6 +144,25 @@ class HealthScoreCalculator:
     @staticmethod
     async def calculate_overall_score(db: AsyncSession, user_id: str) -> dict:
         """Calculate overall financial health score"""
+        # Check if user has any transactions at all
+        any_transactions = await db.execute(
+            select(func.count(Transaction.id))
+            .filter(Transaction.user_id == user_id)
+        )
+        transaction_count = any_transactions.scalar() or 0
+
+        # New user with no data — return neutral welcome state
+        if transaction_count == 0:
+            return {
+                "score": 0,
+                "savings_score": 0,
+                "budget_adherence_score": 0,
+                "bill_punctuality_score": 0,
+                "grade": "-",
+                "message": "Add income & expenses to see your score",
+                "calculated_at": datetime.utcnow()
+            }
+
         savings_score = await HealthScoreCalculator.calculate_savings_score(db, user_id)
         budget_score = await HealthScoreCalculator.calculate_budget_adherence_score(db, user_id)
         bill_score = await HealthScoreCalculator.calculate_bill_punctuality_score(db, user_id)

@@ -5,7 +5,8 @@ import { goalService } from '../../services/goals.js';
 import { Plus, Target, Trash2, Calendar } from 'lucide-react';
 import { Modal } from '../../components/ui/Modal.jsx';
 import { GoalForm } from '../../components/goals/GoalForm.jsx';
-import { cn } from '../../lib/utils'; // Ensure utility for classes
+import { cn } from '../../lib/utils';
+import { useToast } from '../../components/ui/Toast.jsx';
 
 function ProgressBar({ current, target }) {
     const safeCurrent = Math.max(0, current);
@@ -27,6 +28,7 @@ export default function Goals() {
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const toast = useToast();
 
   useEffect(() => {
 	  const fetchGoals = async () => {
@@ -45,8 +47,15 @@ export default function Goals() {
 
   const handleDelete = async (id) => {
 	  if(confirm('Delete this goal?')) {
-		  await goalService.delete(id);
-		  setRefreshTrigger(p => p+1);
+		  setGoals((prev) => prev.filter((g) => g.id !== id));
+		  try {
+			  await goalService.delete(id);
+			  toast.success('Goal deleted');
+		  } catch (err) {
+			  console.error('Failed to delete goal', err);
+			  toast.error('Failed to delete goal');
+			  setRefreshTrigger(p => p+1);
+		  }
 	  }
   };
 
@@ -57,6 +66,7 @@ export default function Goals() {
           await goalService.contribute(id, amount);
           setAddingFundsTo(null);
           setRefreshTrigger(p => p+1);
+          toast.success(`$${amount.toFixed(2)} added to goal`);
           
           if (viewingGoal && viewingGoal.id === id) {
               // Refresh logs if viewing details
@@ -67,7 +77,7 @@ export default function Goals() {
           }
       } catch (err) {
           console.error("Failed to add funds", err);
-          alert("Failed to contribute to goal");
+          toast.error('Failed to contribute to goal');
       }
   };
 
@@ -95,8 +105,9 @@ export default function Goals() {
 		  await goalService.create(data);
 		  setIsModalOpen(false);
 		  setRefreshTrigger(p => p+1);
+		  toast.success('Goal created successfully');
 	  } catch (err) {
-		  alert("Failed to create goal");
+		  toast.error('Failed to create goal');
 	  }
   };
 

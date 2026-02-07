@@ -19,7 +19,7 @@ export function SpendingChart({ data = [], range, onRangeChange }) {
       </CardHeader>
       <CardContent>
         <div className="h-[250px] w-full mt-4 min-w-0">
-          <ResponsiveContainer width="100%" height="100%">
+          <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
             <AreaChart
               data={data}
               margin={{

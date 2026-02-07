@@ -25,7 +25,7 @@ export function FinancialHealthScore({ score = 75, message, color }) {
       </CardHeader>
       <CardContent className="flex flex-col items-center justify-center relative">
         <div className="w-full h-[200px]">
-          <ResponsiveContainer width="100%" height="100%">
+          <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
             <PieChart>
               <Pie
                 data={data}

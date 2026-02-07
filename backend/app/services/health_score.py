@@ -9,6 +9,21 @@ class HealthScoreService:
         savings_count: int,
         top_categories: list = [] # New: Pass in category data
     ) -> dict:
+        # If user has no financial data at all, return a neutral state
+        if monthly_income == 0 and monthly_expenses == 0 and missed_bills_count == 0:
+            return {
+                "score": 0,
+                "color": "#71717a",  # zinc-500 (neutral)
+                "message": "Add income & expenses to see your score",
+                "insights": [
+                    {
+                        "type": "info",
+                        "title": "Welcome to WealthSync!",
+                        "message": "Start by adding your income sources and recording transactions to get your financial health score."
+                    }
+                ]
+            }
+
         score = 100
         insights = []
 

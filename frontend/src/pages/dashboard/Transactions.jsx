@@ -4,19 +4,22 @@ import { TransactionForm } from '../../components/transactions/TransactionForm.j
 import { Modal } from '../../components/ui/Modal.jsx';
 import { Plus } from 'lucide-react';
 import { transactionService } from '../../services/transactions.js';
+import { useToast } from '../../components/ui/Toast.jsx';
 
 export default function Transactions() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const toast = useToast();
 
   const handleCreateTransaction = async (data) => {
       try {
           await transactionService.create(data);
           setIsModalOpen(false);
-          setRefreshTrigger(p => p + 1); // Refresh table
+          setRefreshTrigger(p => p + 1);
+          toast.success('Transaction added successfully');
       } catch (err) {
           console.error("Failed to create transaction", err);
-          alert("Failed to create transaction");
+          toast.error('Failed to create transaction');
       }
   };
 

@@ -7,6 +7,7 @@ import { Plus, Edit, Trash2, CheckCircle, Calendar } from 'lucide-react';
 import { billService } from '../../services/bills.js';
 import { categoryService } from '../../services/categories.js';
 import { cn } from '../../lib/utils';
+import { useToast } from '../../components/ui/Toast.jsx';
 
 export default function Bills() {
   const [bills, setBills] = useState([]);
@@ -21,6 +22,7 @@ export default function Bills() {
     category_id: '',
     autopay_enabled: false
   });
+  const toast = useToast();
 
   useEffect(() => {
     loadBills();
@@ -68,9 +70,10 @@ export default function Bills() {
       setEditingBill(null);
       setFormData({ name: '', amount: '', due_day: '', category_id: '', autopay_enabled: false });
       loadBills();
+      toast.success(editingBill ? 'Bill updated successfully' : 'Bill created successfully');
     } catch (err) {
       console.error('Failed to save bill', err);
-      alert('Failed to save bill');
+      toast.error('Failed to save bill. Please try again.');
     }
   };
 
@@ -88,21 +91,33 @@ export default function Bills() {
 
   const handleDelete = async (id) => {
     if (confirm('Are you sure you want to delete this bill?')) {
+      // Optimistic update — remove from UI immediately
+      setBills((prev) => prev.filter((bill) => bill.id !== id));
       try {
         await billService.delete(id);
-        loadBills();
+        toast.success('Bill deleted successfully');
       } catch (err) {
         console.error('Failed to delete bill', err);
+        toast.error('Failed to delete bill. Reverting...');
+        loadBills();
       }
     }
   };
 
   const handleMarkPaid = async (id) => {
+    // Optimistic update — mark as paid in UI immediately
+    setBills((prev) =>
+      prev.map((bill) =>
+        bill.id === id ? { ...bill, last_paid_at: new Date().toISOString() } : bill
+      )
+    );
     try {
       await billService.markPaid(id);
-      loadBills();
+      toast.success('Bill marked as paid');
     } catch (err) {
       console.error('Failed to mark as paid', err);
+      toast.error('Failed to mark bill as paid');
+      loadBills();
     }
   };
 

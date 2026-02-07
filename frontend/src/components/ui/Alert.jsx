@@ -4,28 +4,32 @@ import { AlertCircle, CheckCircle, Info, XCircle, X } from 'lucide-react';
 export function Alert({ type = 'info', title, message, onClose, className = '' }) {
   const styles = {
     success: {
-      bg: 'bg-green-50 border-green-200',
+      bg: 'bg-emerald-500/10 border-emerald-500/30',
       icon: CheckCircle,
-      iconColor: 'text-green-600',
-      textColor: 'text-green-900',
+      iconColor: 'text-emerald-400',
+      textColor: 'text-emerald-300',
+      titleColor: 'text-emerald-200',
     },
     error: {
-      bg: 'bg-red-50 border-red-200',
+      bg: 'bg-red-500/10 border-red-500/30',
       icon: XCircle,
-      iconColor: 'text-red-600',
-      textColor: 'text-red-900',
+      iconColor: 'text-red-400',
+      textColor: 'text-red-300',
+      titleColor: 'text-red-200',
     },
     warning: {
-      bg: 'bg-yellow-50 border-yellow-200',
+      bg: 'bg-amber-500/10 border-amber-500/30',
       icon: AlertCircle,
-      iconColor: 'text-yellow-600',
-      textColor: 'text-yellow-900',
+      iconColor: 'text-amber-400',
+      textColor: 'text-amber-300',
+      titleColor: 'text-amber-200',
     },
     info: {
-      bg: 'bg-blue-50 border-blue-200',
+      bg: 'bg-blue-500/10 border-blue-500/30',
       icon: Info,
-      iconColor: 'text-blue-600',
-      textColor: 'text-blue-900',
+      iconColor: 'text-blue-400',
+      textColor: 'text-blue-300',
+      titleColor: 'text-blue-200',
     },
   };
 
@@ -33,15 +37,15 @@ export function Alert({ type = 'info', title, message, onClose, className = '' }
   const Icon = style.icon;
 
   return (
-    <div className={`${style.bg} border-2 rounded-xl p-4 ${className} animate-slideInUp`}>
+    <div className={`${style.bg} border rounded-xl p-4 backdrop-blur-sm ${className} animate-fade-in`}>
       <div className="flex items-start gap-3">
         <Icon className={`${style.iconColor} shrink-0 mt-0.5`} size={20} />
         <div className="flex-1">
-          {title && <h4 className={`font-semibold ${style.textColor} mb-1`}>{title}</h4>}
+          {title && <h4 className={`font-semibold ${style.titleColor} mb-1`}>{title}</h4>}
           <p className={`text-sm ${style.textColor}`}>{message}</p>
         </div>
         {onClose && (
-          <button onClick={onClose} className={`${style.iconColor} hover:opacity-70 transition-opacity`}>
+          <button onClick={onClose} className="text-zinc-500 hover:text-zinc-300 transition-colors">
             <X size={18} />
           </button>
         )}
