@@ -1,86 +1,193 @@
-# 💰 WealthSync - Personal Finance Platform
+# 💰 WealthSync — Personal Finance Platform
 
-A comprehensive, self-hosted personal finance management system built with FastAPI and Next.js.
+A comprehensive, full-stack personal finance management system built with **FastAPI** and **React**. Track income, expenses, bills, subscriptions, savings goals, and get an intelligent financial health score — all in a polished dark glassmorphism UI.
 
-## 🚀 Key Features
+---
 
-### Core Banking
+## ✨ Features
 
-- **Income Tracking**: Manage multiple income sources (Salary, Freelance, Dividend)
-- **Budgeting**: Smart budgeting with Fixed and Percentage-based rules
-- **Expense Tracking**: Daily transaction logging with categorization
-- **Bill Management**: Recurring bill tracking with due date reminders
+### Core Finance
 
-### Enhanced Intelligence
+- **Income Tracking** — Manage multiple income sources (salary, freelance, dividends)
+- **Expense Tracking** — Daily transaction logging with category tagging
+- **Bill Management** — Recurring bill tracking with due-day reminders and autopay flags
+- **Subscription Tracker** — Monitor recurring subscriptions with billing cycle tracking
 
-- **Budget Health Score**: Gamified 0-100 score of your financial health
-- **Daily Spendable**: "Safe to spend" daily limit calculator
-- **Savings Goals**: Goal tracking with priority-based auto-deduction
-- **Subscription Tracker**: Manage recurring subs with usage analytics
+### Smart Budgeting
+
+- **Budget Rules** — Create fixed-amount or percentage-based budget allocations per category
+- **Daily Spendable** — Calculates your "safe to spend" daily limit based on income, bills, and allocations
+- **Budget Summary** — Monthly overview of allocated vs. spent per category
+
+### Savings & Goals
+
+- **Savings Goals** — Set targets with deadlines, contribute funds, and track progress visually
+- **Contribution History** — Full log of contributions per goal with timestamps
+
+### Intelligence
+
+- **Financial Health Score** — 0–100 score based on spending ratio, missed bills, savings progress, and budget adherence
+- **Health Score Gauge** — Animated circular gauge with grade (A+ to F) and personalized recommendations
+- **Dashboard Analytics** — Spending charts, category breakdowns, and recent activity feed
+
+### User Experience
+
+- **Toast Notifications** — Professional slide-in toasts for all CRUD operations (success, error, warning, info)
+- **Optimistic Updates** — Instant UI feedback on delete/update operations with automatic rollback on failure
+- **Auto-Login on Signup** — Seamless onboarding; new users land directly on the dashboard
+- **Dark Glassmorphism UI** — Frosted glass effects, violet-to-indigo gradients, zinc-900 foundations
+- **Responsive Design** — Works across desktop and mobile viewports
+
+---
 
 ## 🛠️ Tech Stack
 
-- **Backend**: FastAPI (Python 3.11)
-- **Database**: PostgreSQL 15 (Async SQLAlchemy)
-- **Frontend**: Next.js 14 (TypeScript + Tailwind)
-- **Infrastructure**: Docker Compose
+| Layer          | Technology                                                      |
+| -------------- | --------------------------------------------------------------- |
+| **Frontend**   | React 19, React Router 7, Tailwind CSS 4, Recharts, Framer Motion |
+| **Backend**    | FastAPI, Python 3.11, Pydantic v2, SQLAlchemy (async)           |
+| **Database**   | PostgreSQL 15 (via asyncpg)                                     |
+| **Auth**       | JWT (python-jose), Argon2 password hashing                      |
+| **Migrations** | Alembic                                                         |
+| **Task Queue** | Celery + Redis (optional)                                       |
+| **Build Tool** | Vite (rolldown-vite)                                            |
+| **Deployment** | Render (backend), Vercel (frontend), Supabase/Neon (database)   |
+| **Dev Infra**  | Docker Compose, PowerShell setup script                         |
 
-## 🚀 Deployment
+---
 
-**[👉 Read the Step-by-Step Deployment Guide](DEPLOYMENT.md)**
+## 📁 Project Structure
 
-Supports deployment on:
+```
+money_manage/
+├── backend/
+│   ├── app/
+│   │   ├── api/v1/          # 12 route modules (auth, bills, budgets, etc.)
+│   │   ├── core/            # Config, database, security, middleware
+│   │   ├── models/          # SQLAlchemy models (10 entities)
+│   │   ├── schemas/         # Pydantic request/response schemas
+│   │   ├── services/        # Business logic (budget engine, health score)
+│   │   ├── tasks/           # Celery background tasks
+│   │   └── static/avatars/  # User avatar uploads
+│   ├── alembic/versions/    # Database migrations
+│   ├── tests/               # Pytest test suite
+│   ├── requirements.txt
+│   └── Dockerfile
+├── frontend/
+│   ├── src/
+│   │   ├── components/      # 25 reusable components (UI, dashboard, etc.)
+│   │   ├── pages/           # 8 page views (Landing, Login, Dashboard, etc.)
+│   │   ├── services/        # 9 API service modules
+│   │   ├── lib/             # Auth context, API client, utilities
+│   │   └── layouts/         # MainLayout with Sidebar
+│   ├── package.json
+│   └── Dockerfile
+├── docker-compose.yml       # Local development stack
+├── docker-compose.hub.yml   # Pre-built image deployment
+├── setup.ps1                # Windows one-click setup
+├── DEPLOYMENT.md            # Production deployment guide
+├── QUICKSTART.md            # Quick start instructions
+└── DOCKER_HUB.md            # Docker Hub deployment guide
+```
 
-- **Frontend**: Vercel, Netlify
-- **Backend**: Railway, Render, Fly.io
-- **Database**: Neon, Supabase, ElephantSQL
+---
 
-## 🏁 Getting Started
+## 🚀 Getting Started
 
 ### Prerequisites
 
-- Docker & Docker Compose
-- Node.js 18+ (for local frontend dev)
+- **Docker & Docker Compose** (recommended) — _or_ Node.js 18+ and Python 3.11+
+- PostgreSQL 15 (if running without Docker)
 
 ### Quick Start (Docker)
 
-1. **Clone & Setup:**
+```bash
+git clone https://github.com/SatyaTejaChukka/money_manage.git
+cd money_manage
+```
 
-   ```bash
-   git clone https://github.com/SatyaTejaChukka/money_manage
-   cd money_manage
-   ./setup.ps1
-   ```
+**Windows:**
+```powershell
+.\setup.ps1
+```
 
-   _If on Linux/Mac, run `docker-compose up -d --build` manually._
+**Linux / macOS:**
+```bash
+docker-compose up -d --build
+docker-compose exec backend alembic upgrade head
+cd frontend && npm install && npm run dev
+```
 
-2. **Access App:**
-   - Frontend: [http://localhost:3000](http://localhost:3000)
-   - Backend API Docs: [http://localhost:8000/docs](http://localhost:8000/docs)
+Once running:
 
-3. **Login:**
-   - Create a new account at `/signup`
+| Service          | URL                                                |
+| ---------------- | -------------------------------------------------- |
+| Frontend         | [http://localhost:3000](http://localhost:3000)      |
+| Backend API Docs | [http://localhost:8000/docs](http://localhost:8000/docs) |
 
-## 🧪 Development
+### Manual Development Setup
 
-### Backend
+<details>
+<summary><strong>Backend</strong></summary>
 
 ```bash
 cd backend
-# Create virtualenv
 python -m venv venv
-source venv/bin/activate  # or venv\Scripts\activate on Windows
+venv\Scripts\activate        # Windows
+# source venv/bin/activate   # macOS/Linux
 pip install -r requirements.txt
-# Run migration
 alembic upgrade head
-# Start Dev Server
-uvicorn app.main:app --reload
+uvicorn app.main:app --reload --port 8000
 ```
 
-### Frontend
+</details>
+
+<details>
+<summary><strong>Frontend</strong></summary>
 
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
+
+</details>
+
+---
+
+## 🌐 Deployment
+
+See the full **[Deployment Guide →](DEPLOYMENT.md)** for step-by-step instructions.
+
+| Component    | Recommended Host         |
+| ------------ | ------------------------ |
+| Frontend     | Vercel                   |
+| Backend      | Render                   |
+| Database     | Supabase or Neon         |
+
+---
+
+## 🔌 API Endpoints
+
+All endpoints are under `/api/v1`. Interactive docs available at `/docs` (Swagger UI).
+
+| Module          | Prefix               | Description                          |
+| --------------- | --------------------- | ------------------------------------ |
+| Auth            | `/auth`               | Signup, login, current user          |
+| Users           | `/users`              | Profile management, avatar upload    |
+| Income          | `/income`             | Income source CRUD                   |
+| Transactions    | `/transactions`       | Expense/income transaction logging   |
+| Categories      | `/categories`         | Spending categories                  |
+| Budgets         | `/budgets`            | Budget rules and monthly summaries   |
+| Bills           | `/bills`              | Recurring bill tracking              |
+| Subscriptions   | `/subscriptions`      | Subscription management              |
+| Goals           | `/goals`              | Savings goals with contribution logs |
+| Dashboard       | `/dashboard`          | Aggregated summary and analytics     |
+| Notifications   | `/notifications`      | User notification feed               |
+| Health Score    | `/health`             | Financial health score calculation   |
+
+---
+
+## 📄 License
+
+This project is for personal and educational use.
