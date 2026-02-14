@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
+/* eslint-disable react-refresh/only-export-components */
+import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
 import { CheckCircle, XCircle, AlertCircle, Info, X } from 'lucide-react';
 
 const ToastContext = createContext(null);
@@ -90,17 +91,44 @@ function Toast({ toast, onDismiss }) {
 
 export function ToastProvider({ children }) {
   const [toasts, setToasts] = useState([]);
+  const timeoutMapRef = useRef(new Map());
+  const recentSignatureRef = useRef(null);
 
   const dismiss = useCallback((id) => {
+    const timeoutId = timeoutMapRef.current.get(id);
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+      timeoutMapRef.current.delete(id);
+    }
     setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
   const addToast = useCallback(({ type = 'info', title, message, duration = 4000 }) => {
+    const signature = `${type}::${title || ''}::${message || ''}`;
+    if (recentSignatureRef.current === signature) {
+      return null;
+    }
+    recentSignatureRef.current = signature;
+    setTimeout(() => {
+      if (recentSignatureRef.current === signature) {
+        recentSignatureRef.current = null;
+      }
+    }, 600);
+
     const id = ++toastId;
-    setToasts((prev) => [...prev, { id, type, title, message, duration }]);
-    setTimeout(() => dismiss(id), duration);
+    setToasts((prev) => [...prev, { id, type, title, message, duration }].slice(-5));
+    const timeoutId = setTimeout(() => dismiss(id), duration);
+    timeoutMapRef.current.set(id, timeoutId);
     return id;
   }, [dismiss]);
+
+  useEffect(() => {
+    const timeoutMap = timeoutMapRef.current;
+    return () => {
+      timeoutMap.forEach((timeoutId) => clearTimeout(timeoutId));
+      timeoutMap.clear();
+    };
+  }, []);
 
   const toast = React.useMemo(() => ({
     success: (message, title) => addToast({ type: 'success', title, message }),

@@ -1,11 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ChevronDown, Check } from 'lucide-react';
 import { cn } from '../../lib/utils';
-import { motion, AnimatePresence } from 'framer-motion';
 
 export function Select({ options, value, onChange = () => {}, placeholder = "Select option", className, size = "default", searchable = false }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [search, setSearch] = useState('');
   const containerRef = useRef(null);
+  const searchInputRef = useRef(null);
 
   const selectedOption = options.find(opt => opt.value === value);
 
@@ -14,6 +15,7 @@ export function Select({ options, value, onChange = () => {}, placeholder = "Sel
     const handleClickOutside = (event) => {
       if (containerRef.current && !containerRef.current.contains(event.target)) {
         setIsOpen(false);
+        setSearch('');
       }
     };
 
@@ -24,6 +26,7 @@ export function Select({ options, value, onChange = () => {}, placeholder = "Sel
   const handleSelect = (optionValue) => {
     onChange(optionValue);
     setIsOpen(false);
+    setSearch('');
   };
 
   const sizes = {
@@ -31,18 +34,13 @@ export function Select({ options, value, onChange = () => {}, placeholder = "Sel
       sm: "h-8 text-xs px-2"
   };
 
-  const [search, setSearch] = useState('');
-  const searchInputRef = useRef(null);
-
   useEffect(() => {
      if (isOpen && searchable) {
          setTimeout(() => {
             searchInputRef.current?.focus();
          }, 50);
-     } else {
-         setSearch(''); // Reset search when closed
      }
-  }, [isOpen]);
+  }, [isOpen, searchable]);
 
   const filteredOptions = options.filter(opt => 
      opt.label.toLowerCase().includes(search.toLowerCase())
@@ -52,7 +50,15 @@ export function Select({ options, value, onChange = () => {}, placeholder = "Sel
     <div className={cn("relative w-full", className)} ref={containerRef}>
       <button
         type="button"
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => {
+          setIsOpen((prev) => {
+            const next = !prev;
+            if (!next) {
+              setSearch('');
+            }
+            return next;
+          });
+        }}
         className={cn(
           "w-full flex items-center justify-between rounded-xl px-4 transition-all duration-200 border",
           sizes[size] || sizes.default,
@@ -71,15 +77,8 @@ export function Select({ options, value, onChange = () => {}, placeholder = "Sel
         />
       </button>
 
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -10, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -10, scale: 0.95 }}
-            transition={{ duration: 0.15, ease: "easeOut" }}
-            className="absolute z-9999 w-full mt-2 overflow-hidden bg-[#09090b] border border-white/10 rounded-xl shadow-xl shadow-black/50 backdrop-blur-xl"
-          >
+      {isOpen && (
+          <div className="absolute z-9999 w-full mt-2 overflow-hidden bg-[#09090b] border border-white/10 rounded-xl shadow-xl shadow-black/50 backdrop-blur-xl animate-fade-in">
             {searchable && (
                 <div className="p-2 border-b border-white/5 sticky top-0 bg-[#09090b] z-10">
                     <input
@@ -118,9 +117,8 @@ export function Select({ options, value, onChange = () => {}, placeholder = "Sel
                   ))
               )}
             </div>
-          </motion.div>
+          </div>
         )}
-      </AnimatePresence>
     </div>
   );
 }

@@ -1,7 +1,6 @@
-import React, { Fragment } from 'react';
+import React from 'react';
 import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
-import { cn } from '../../lib/utils';
 
 export function Modal({ isOpen, onClose, title, children }) {
   if (!isOpen) return null;

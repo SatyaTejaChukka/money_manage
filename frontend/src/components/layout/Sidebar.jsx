@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { NavLink, Link } from 'react-router-dom';
 import { useAuth } from '../../lib/auth.jsx';
 import { cn } from '../../lib/utils';
+import { API_ORIGIN } from '../../lib/api.js';
 import {
   LayoutDashboard,
   Receipt,
@@ -10,9 +11,6 @@ import {
   Settings,
   LogOut,
   TrendingUp,
-  Menu,
-  X,
-  CreditCard,
   BarChart3,
   FileText,
   Repeat
@@ -32,7 +30,7 @@ const navigation = [
 export function Sidebar({ mobileOpen, setMobileOpen }) {
   const { logout, user } = useAuth();
 
-  const SidebarContent = () => (
+  const sidebarContent = (
     <div className="flex flex-col h-full">
       <div className="flex items-center h-20 px-8 border-b border-white/5">
         <Link to="/dashboard" className="flex items-center gap-3 group">
@@ -91,7 +89,7 @@ export function Sidebar({ mobileOpen, setMobileOpen }) {
           <div className="mb-4 p-4 rounded-2xl bg-white/5 border border-white/5 backdrop-blur-sm flex items-center gap-3">
             {user.avatar_url ? (
               <img 
-                src={`http://localhost:8000${user.avatar_url}`}
+                src={`${API_ORIGIN}${user.avatar_url}`}
                 alt="Avatar"
                 className="w-10 h-10 rounded-full object-cover"
               />
@@ -126,12 +124,12 @@ export function Sidebar({ mobileOpen, setMobileOpen }) {
           mobileOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
-        <SidebarContent />
+        {sidebarContent}
       </div>
 
       {/* Desktop Sidebar */}
       <div className="hidden md:flex md:w-72 md:flex-col md:fixed md:inset-y-0 bg-[#09090b]/50 backdrop-blur-xl border-r border-white/5 z-20">
-        <SidebarContent />
+        {sidebarContent}
       </div>
 
       {/* Mobile Overlay */}

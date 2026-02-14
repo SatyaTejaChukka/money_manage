@@ -2,6 +2,7 @@ from typing import Any, List, Annotated
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy.orm import selectinload
 from uuid import uuid4
 from datetime import datetime
 
@@ -32,7 +33,6 @@ async def create_bill(
     await db.refresh(bill)
     
     # Load the bill with category relationship
-    from sqlalchemy.orm import selectinload
     result = await db.execute(
         select(Bill).options(selectinload(Bill.category)).where(Bill.id == bill.id)
     )
@@ -47,7 +47,6 @@ async def read_bills(
     """
     Retrieve all bills.
     """
-    from sqlalchemy.orm import selectinload
     result = await db.execute(
         select(Bill).options(selectinload(Bill.category)).filter(Bill.user_id == current_user.id)
     )
@@ -78,6 +77,12 @@ async def update_bill(
     db.add(bill)
     await db.commit()
     await db.refresh(bill)
+
+    # Reload with category relationship
+    result = await db.execute(
+        select(Bill).options(selectinload(Bill.category)).where(Bill.id == bill.id)
+    )
+    bill = result.scalar_one()
     return bill
 
 @router.delete("/{bill_id}", response_model=BillResponse)
@@ -90,7 +95,7 @@ async def delete_bill(
     Delete a bill.
     """
     result = await db.execute(
-        select(Bill).filter(Bill.id == bill_id, Bill.user_id == current_user.id)
+        select(Bill).options(selectinload(Bill.category)).filter(Bill.id == bill_id, Bill.user_id == current_user.id)
     )
     bill = result.scalars().first()
     if not bill:
@@ -110,13 +115,36 @@ async def mark_bill_paid(
     Mark a bill as paid for the current cycle.
     """
     result = await db.execute(
-        select(Bill).filter(Bill.id == bill_id, Bill.user_id == current_user.id)
+        select(Bill).options(selectinload(Bill.category)).filter(Bill.id == bill_id, Bill.user_id == current_user.id)
     )
     bill = result.scalars().first()
     if not bill:
         raise HTTPException(status_code=404, detail="Bill not found")
 
     bill.last_paid_at = datetime.utcnow()
+    db.add(bill)
+    await db.commit()
+    await db.refresh(bill)
+    return bill
+
+
+@router.post("/{bill_id}/mark-unpaid", response_model=BillResponse)
+async def mark_bill_unpaid(
+    bill_id: str,
+    current_user: Annotated[User, Depends(deps.get_current_user)],
+    db: Annotated[AsyncSession, Depends(get_db)]
+) -> Any:
+    """
+    Mark a bill as unpaid for the current cycle.
+    """
+    result = await db.execute(
+        select(Bill).options(selectinload(Bill.category)).filter(Bill.id == bill_id, Bill.user_id == current_user.id)
+    )
+    bill = result.scalars().first()
+    if not bill:
+        raise HTTPException(status_code=404, detail="Bill not found")
+
+    bill.last_paid_at = None
     db.add(bill)
     await db.commit()
     await db.refresh(bill)

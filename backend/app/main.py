@@ -93,7 +93,7 @@ def root():
 # Routes
 from app.api.v1 import (
     auth, income, categories, budgets, transactions, 
-    bills, savings, subscriptions, users, dashboard, notifications, health
+    bills, savings, subscriptions, users, dashboard, notifications, health, autopilot
 )
 
 app.include_router(auth.router, prefix=f"{settings.API_V1_STR}/auth", tags=["auth"])
@@ -107,4 +107,5 @@ app.include_router(subscriptions.router, prefix=f"{settings.API_V1_STR}/subscrip
 app.include_router(users.router, prefix=f"{settings.API_V1_STR}/users", tags=["users"])
 app.include_router(dashboard.router, prefix=f"{settings.API_V1_STR}/dashboard", tags=["dashboard"])
 app.include_router(notifications.router, prefix=f"{settings.API_V1_STR}/notifications", tags=["notifications"])
+app.include_router(autopilot.router, prefix=f"{settings.API_V1_STR}/autopilot", tags=["autopilot"])
 app.include_router(health.router, prefix=f"{settings.API_V1_STR}/health", tags=["health"])

@@ -7,11 +7,8 @@ This module runs daily to check all active bills/subscriptions and:
 - Mark overdue bills
 """
 
-import os
-import sys
-sys.path.append(os.getcwd())
-
 from celery import shared_task
+import calendar
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 from sqlalchemy import select, and_
@@ -19,6 +16,7 @@ from uuid import uuid4
 import asyncio
 
 from app.core.database import AsyncSessionLocal
+from app.core.config import settings
 from app.models.bill import Bill 
 from app.models.subscription import Subscription
 from app.models.transaction import Transaction
@@ -26,22 +24,23 @@ from app.models.notification import Notification
 
 def calculate_next_due_date(due_day: int, last_paid_at: datetime = None) -> datetime:
     """Calculate next bill due date based on due_day of month."""
-    today = datetime.now()
+    today = datetime.utcnow()
+    safe_due_day = max(1, due_day)
     
     if last_paid_at:
         # Calculate from last payment
         next_month = last_paid_at + relativedelta(months=1)
-        return next_month.replace(day=min(due_day, 28))
+        last_day = calendar.monthrange(next_month.year, next_month.month)[1]
+        return next_month.replace(day=min(safe_due_day, last_day))
     else:
         # First time - use this month or next
-        try:
-            next_due = today.replace(day=due_day)
-        except ValueError:
-            # Handle months with fewer days (e.g., Feb 31 -> Feb 28)
-            next_due = today.replace(day=28)
+        last_day_this_month = calendar.monthrange(today.year, today.month)[1]
+        next_due = today.replace(day=min(safe_due_day, last_day_this_month))
         
         if next_due < today:
-            next_due = next_due + relativedelta(months=1)
+            next_month = today + relativedelta(months=1)
+            last_day_next_month = calendar.monthrange(next_month.year, next_month.month)[1]
+            next_due = next_month.replace(day=min(safe_due_day, last_day_next_month))
         
         return next_due
 
@@ -79,12 +78,12 @@ async def create_pending_transaction_and_notification(
     db.add(transaction)
 
     # Create notification
-    days_until_due = (due_date - datetime.now()).days
+    days_until_due = (due_date - datetime.utcnow()).days
     notification = Notification(
         id=str(uuid4()),
         user_id=user_id,
         title=f"Bill Due in {days_until_due} Days",
-        message=f"{description} - ${amount:.2f} due on {due_date.strftime('%b %d, %Y')}",
+        message=f"{description} - INR {amount:.2f} due on {due_date.strftime('%b %d, %Y')}",
         type="bill_reminder",
         action_url=f"/dashboard/transactions",
         related_id=transaction.id
@@ -102,13 +101,17 @@ async def process_bills():
         bills = result.scalars().all()
         
         for bill in bills:
+            if bill.autopay_enabled:
+                # Autopay-enabled bills are handled by the autopilot payment-order pipeline.
+                continue
+
             # Calculate next due date
             next_due = calculate_next_due_date(bill.due_day, bill.last_paid_at)
             
             # Create pending transaction 3 days before
             reminder_date = next_due - timedelta(days=3)
             
-            if datetime.now() >= reminder_date and datetime.now() < next_due:
+            if datetime.utcnow() >= reminder_date and datetime.utcnow() < next_due:
                 await create_pending_transaction_and_notification(
                     db=db,
                     user_id=bill.user_id,
@@ -124,7 +127,7 @@ async def process_subscriptions():
     async with AsyncSessionLocal() as db:
         # Get all active subscriptions
         result = await db.execute(
-            select(Subscription).filter(Subscription.active == True)
+            select(Subscription).filter(Subscription.is_active == True)
         )
         subscriptions = result.scalars().all()
         
@@ -134,7 +137,7 @@ async def process_subscriptions():
                 next_due = sub.next_billing_date
             else:
                 # Initialize next billing date
-                next_due = datetime.now() + timedelta(days=30 if sub.billing_cycle == "monthly" else 365)
+                next_due = datetime.utcnow() + timedelta(days=30 if sub.billing_cycle == "monthly" else 365)
                 sub.next_billing_date = next_due
                 db.add(sub)
                 await db.commit()
@@ -142,7 +145,7 @@ async def process_subscriptions():
             # Create pending transaction 3 days before
             reminder_date = next_due - timedelta(days=3)
             
-            if datetime.now() >= reminder_date and datetime.now() < next_due:
+            if datetime.utcnow() >= reminder_date and datetime.utcnow() < next_due:
                 await create_pending_transaction_and_notification(
                     db=db,
                     user_id=sub.user_id,
@@ -158,8 +161,19 @@ def check_and_create_pending_bills():
     """
     Main periodic task that runs daily to check bills and subscriptions.
     Creates pending transactions and notifications for upcoming payments.
+    Also executes Autopilot payments for due bills.
     """
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(process_bills())
-    loop.run_until_complete(process_subscriptions())
+async def run_all_tasks():
+        await process_bills()
+
+        from app.services.autopilot import AutopilotService
+        async with AsyncSessionLocal() as db:
+            await AutopilotService.prepare_payment_orders_for_all_users(
+                db,
+                days_ahead=settings.AUTOPILOT_PAYMENT_PREPARE_DAYS,
+            )
+            await AutopilotService.execute_due_approved_payments(db)
+
+    asyncio.run(run_all_tasks())
+
     return "Bill automation task completed"

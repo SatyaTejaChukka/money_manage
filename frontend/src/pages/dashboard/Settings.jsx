@@ -7,12 +7,12 @@ import { Switch } from '../../components/ui/Switch.jsx'; // Switch is visual onl
 import { User, Shield, Bell } from 'lucide-react';
 import { userService } from '../../services/user.js';
 import { useAuth } from '../../lib/auth.jsx';
+import { API_ORIGIN } from '../../lib/api.js';
 
 export default function Settings() {
-  const { user, login, refreshUser } = useAuth(); // We can use login to update local user state if needed, or just re-fetch
+  const { refreshUser } = useAuth();
   const [profileData, setProfileData] = useState({ email: '' });
   const [passwordData, setPasswordData] = useState({ old_password: '', new_password: '', confirm_password: '' });
-  const [isLoading, setIsLoading] = useState(true);
   const [message, setMessage] = useState({ type: '', text: '' });
 
   const tabs = [
@@ -28,8 +28,6 @@ export default function Settings() {
               setProfileData({ email: u.email, full_name: u.full_name, avatar_url: u.avatar_url });
           } catch (err) {
               console.error(err);
-          } finally {
-              setIsLoading(false);
           }
       };
       fetchProfile();
@@ -125,7 +123,7 @@ export default function Settings() {
                       <div className="relative">
                         {profileData.avatar_url ? (
                           <img 
-                            src={`http://localhost:8000${profileData.avatar_url}`}
+                            src={`${API_ORIGIN}${profileData.avatar_url}`}
                             alt="Avatar"
                             className="w-20 h-20 rounded-full object-cover shadow-xl shadow-violet-500/20"
                           />

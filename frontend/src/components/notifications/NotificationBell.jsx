@@ -1,40 +1,55 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useReducer, useRef, useState } from 'react';
 import { Bell } from 'lucide-react';
-import { notificationService } from '../../services/notifications';
 import { useNavigate } from 'react-router-dom';
+import { notificationService } from '../../services/notifications';
 
 export function NotificationBell() {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
+  const [, forceClockTick] = useReducer((v) => v + 1, 0);
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
 
-  // Fetch notifications
   const fetchNotifications = async () => {
     try {
       const data = await notificationService.getNotifications();
       setNotifications(data);
-      setUnreadCount(data.filter(n => !n.read).length);
+      setUnreadCount(data.filter((item) => !item.read).length);
     } catch (err) {
-      console.error("Failed to fetch notifications", err);
+      console.error('Failed to fetch notifications', err);
     }
   };
 
   useEffect(() => {
-    fetchNotifications();
-    // Poll every 30 seconds for new notifications
-    const interval = setInterval(fetchNotifications, 30000);
-    return () => clearInterval(interval);
+    const initialTimer = setTimeout(() => {
+      void fetchNotifications();
+    }, 0);
+
+    const interval = setInterval(() => {
+      void fetchNotifications();
+    }, 30000);
+
+    return () => {
+      clearTimeout(initialTimer);
+      clearInterval(interval);
+    };
   }, []);
 
-  // Close dropdown when clicking outside
   useEffect(() => {
-    function handleClickOutside(event) {
+    const timer = setInterval(() => {
+      forceClockTick();
+    }, 60000);
+    return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsOpen(false);
       }
-    }
+    };
+
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
@@ -42,22 +57,22 @@ export function NotificationBell() {
   const handleMarkAsRead = async (notification) => {
     try {
       await notificationService.markAsRead(notification.id);
-      fetchNotifications();
+      void fetchNotifications();
       if (notification.action_url) {
         navigate(notification.action_url);
         setIsOpen(false);
       }
     } catch (err) {
-      console.error("Failed to mark as read", err);
+      console.error('Failed to mark as read', err);
     }
   };
 
   const handleMarkAllAsRead = async () => {
     try {
       await notificationService.markAllAsRead();
-      fetchNotifications();
+      void fetchNotifications();
     } catch (err) {
-      console.error("Failed to mark all as read", err);
+      console.error('Failed to mark all as read', err);
     }
   };
 
@@ -65,29 +80,69 @@ export function NotificationBell() {
     e.stopPropagation();
     try {
       await notificationService.deleteNotification(notificationId);
-      fetchNotifications();
+      void fetchNotifications();
     } catch (err) {
-      console.error("Failed to delete notification", err);
+      console.error('Failed to delete notification', err);
     }
   };
 
+  const parseNotificationDate = (value) => {
+    if (!value) {
+      return null;
+    }
+    if (value instanceof Date) {
+      return Number.isNaN(value.getTime()) ? null : value;
+    }
+    if (typeof value !== 'string') {
+      return null;
+    }
+
+    const trimmed = value.trim();
+    if (!trimmed) {
+      return null;
+    }
+
+    // Backend currently returns naive UTC timestamps; treat timezone-less values as UTC.
+    const hasTimezone = /(?:Z|[+-]\d{2}:?\d{2})$/i.test(trimmed);
+    const normalized = hasTimezone ? trimmed : `${trimmed}Z`;
+    const parsed = new Date(normalized);
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
+  };
+
   const formatDate = (dateStr) => {
-    const date = new Date(dateStr);
+    const date = parseNotificationDate(dateStr);
+    if (!date) {
+      return 'Unknown time';
+    }
+
     const now = new Date();
-    const diff = now - date;
+    const diff = Math.max(0, now.getTime() - date.getTime());
     const minutes = Math.floor(diff / 60000);
     const hours = Math.floor(diff / 3600000);
     const days = Math.floor(diff / 86400000);
 
-    if (minutes < 60) return `${minutes}m ago`;
-    if (hours < 24) return `${hours}h ago`;
-    return `${days}d ago`;
+    if (hours < 1) {
+      return `${Math.max(1, minutes)}m ago`;
+    }
+    if (hours < 24) {
+      return `${hours}hr ago`;
+    }
+    if (days >= 1 && days <= 30) {
+      return `${days}d ago`;
+    }
+
+    const showYear = date.getFullYear() !== now.getFullYear();
+    return date.toLocaleDateString('en-IN', {
+      day: 'numeric',
+      month: 'short',
+      ...(showYear ? { year: 'numeric' } : {}),
+    });
   };
 
   return (
     <div className="relative" ref={dropdownRef}>
       <button
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => setIsOpen((prev) => !prev)}
         className="relative p-2 text-zinc-400 hover:text-white transition-colors rounded-lg hover:bg-white/5"
       >
         <Bell size={20} />
@@ -99,8 +154,7 @@ export function NotificationBell() {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-[calc(100vw-2rem)] sm:w-96 max-w-96 bg-zinc-900 border border-zinc-800 rounded-xl shadow-2xl z-50 max-h-[70vh] sm:max-h-[500px] overflow-hidden flex flex-col">
-          {/* Header */}
+        <div className="absolute right-0 mt-2 w-[calc(100vw-2rem)] sm:w-96 max-w-96 bg-zinc-900 border border-zinc-800 rounded-xl shadow-2xl z-50 max-h-[70vh] sm:max-h-125 overflow-hidden flex flex-col">
           <div className="p-4 border-b border-zinc-800 flex items-center justify-between">
             <h3 className="text-white font-semibold">Notifications</h3>
             {unreadCount > 0 && (
@@ -113,7 +167,6 @@ export function NotificationBell() {
             )}
           </div>
 
-          {/* Notifications list */}
           <div className="overflow-y-auto flex-1">
             {notifications.length === 0 ? (
               <div className="p-8 text-center text-zinc-500">
@@ -133,9 +186,7 @@ export function NotificationBell() {
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
                         <h4 className="text-sm font-medium text-white">{notification.title}</h4>
-                        {!notification.read && (
-                          <span className="w-2 h-2 bg-violet-500 rounded-full"></span>
-                        )}
+                        {!notification.read && <span className="w-2 h-2 bg-violet-500 rounded-full" />}
                       </div>
                       <p className="text-xs text-zinc-400 mb-1">{notification.message}</p>
                       <span className="text-[10px] text-zinc-500">{formatDate(notification.created_at)}</span>
@@ -144,7 +195,7 @@ export function NotificationBell() {
                       onClick={(e) => handleDelete(e, notification.id)}
                       className="text-zinc-500 hover:text-red-400 transition-colors text-xs"
                     >
-                      ×
+                      x
                     </button>
                   </div>
                 </div>

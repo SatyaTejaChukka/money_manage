@@ -24,5 +24,10 @@ export const billService = {
   markPaid: async (id) => {
     const response = await api.post(`/bills/${id}/mark-paid`);
     return response.data;
+  },
+
+  markUnpaid: async (id) => {
+    const response = await api.post(`/bills/${id}/mark-unpaid`);
+    return response.data;
   }
 };

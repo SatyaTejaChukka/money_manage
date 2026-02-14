@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+/* eslint-disable react-refresh/only-export-components */
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from './api.js';
 
@@ -21,7 +22,7 @@ export function AuthProvider({ children }) {
     return () => {
       window.removeEventListener('auth:unauthorized', onUnauthorized);
     };
-  }, [navigate]);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -50,27 +51,27 @@ export function AuthProvider({ children }) {
     };
   }, []);
 
-  const login = async (token, redirectTo = '/dashboard') => {
+  const login = useCallback(async (token, redirectTo = '/dashboard') => {
     localStorage.setItem('token', token);
     const res = await api.get('/auth/me');
     setUser(res.data);
     navigate(redirectTo, { replace: true });
-  };
+  }, [navigate]);
 
-  const logout = () => {
+  const logout = useCallback(() => {
     localStorage.removeItem('token');
     setUser(null);
     navigate('/login', { replace: true });
-  };
+  }, [navigate]);
 
-  const refreshUser = async () => {
+  const refreshUser = useCallback(async () => {
       try {
           const res = await api.get('/auth/me');
           setUser(res.data);
       } catch (err) {
           console.error("Failed to refresh user", err);
       }
-  };
+  }, []);
 
   const value = useMemo(
     () => ({
@@ -81,7 +82,7 @@ export function AuthProvider({ children }) {
       isAuthenticated: !!user,
       isLoading,
     }),
-    [user, isLoading]
+    [user, login, logout, refreshUser, isLoading]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

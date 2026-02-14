@@ -1,22 +1,20 @@
+from datetime import datetime
 from typing import Any, Annotated
-from fastapi import APIRouter, Depends, Query
+from uuid import uuid4
+
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from datetime import datetime
-from app.api import deps
-from app.core.database import get_db
-from app.models.user import User
-from app.models.income import IncomeSource
-from app.models.budget import BudgetRule, BudgetCategory
-from app.models.transaction import Transaction
-from app.schemas.budget import BudgetRuleCreate, BudgetRuleUpdate, BudgetRuleResponse
-from app.services.budget_engine import BudgetEngine
 from sqlalchemy.orm import selectinload
 
-# Re-import other routes...
-from uuid import uuid4
-from fastapi import HTTPException, status
-from sqlalchemy.orm import selectinload
+from app.api import deps
+from app.core.database import get_db
+from app.models.budget import BudgetCategory, BudgetRule
+from app.models.income import IncomeSource
+from app.models.transaction import Transaction
+from app.models.user import User
+from app.schemas.budget import BudgetRuleCreate, BudgetRuleResponse, BudgetRuleUpdate
+from app.services.budget_engine import BudgetEngine
 
 router = APIRouter()
 
@@ -117,12 +115,16 @@ async def delete_budget_rule(
 async def get_budget_summary(
     current_user: Annotated[User, Depends(deps.get_current_user)],
     db: Annotated[AsyncSession, Depends(get_db)],
-    month: int = Query(default=datetime.utcnow().month),
-    year: int = Query(default=datetime.utcnow().year)
+    month: int | None = Query(default=None, ge=1, le=12),
+    year: int | None = Query(default=None, ge=1970, le=2100),
 ) -> Any:
     """
     Calculate and return the budget summary dashboard data using Budget Engine.
     """
+    now = datetime.utcnow()
+    target_month = month or now.month
+    target_year = year or now.year
+
     # Fetch all necessary data
     # 1. Incomes
     incomes_res = await db.execute(select(IncomeSource).filter(IncomeSource.user_id == current_user.id))
@@ -147,8 +149,8 @@ async def get_budget_summary(
         incomes=incomes,
         rules=rules,
         transactions=transactions,
-        year=year,
-        month=month
+        year=target_year,
+        month=target_month
     )
     
     return summary

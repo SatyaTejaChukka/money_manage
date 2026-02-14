@@ -3,9 +3,7 @@ import { Card, CardContent } from '../ui/Card.jsx';
 import { cn } from '../../lib/utils';
 import { ArrowUpRight, ArrowDownRight } from 'lucide-react';
 
-export function StatsCard({ title, value, trend, trendValue, icon: Icon, color = "violet" }) {
-  const isPositive = trend === 'up';
-  
+export function StatsCard({ title, value, trend, trendValue, icon, color = "violet" }) {
   const colors = {
     violet: "from-violet-600 to-indigo-600 shadow-violet-500/20",
     emerald: "from-emerald-500 to-teal-500 shadow-emerald-500/20",
@@ -26,7 +24,7 @@ export function StatsCard({ title, value, trend, trendValue, icon: Icon, color =
             "p-3 rounded-xl bg-linear-to-br shadow-lg flex items-center justify-center",
             colors[color]
           )}>
-            <Icon size={20} className="text-white" />
+            {icon ? React.createElement(icon, { size: 20, className: "text-white" }) : null}
           </div>
         </div>
         

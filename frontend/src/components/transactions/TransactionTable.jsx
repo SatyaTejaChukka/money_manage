@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Input } from '../ui/Input.jsx';
 import { Button } from '../ui/Button.jsx';
 import { Select } from '../ui/Select.jsx';
@@ -7,6 +7,7 @@ import { cn } from '../../lib/utils';
 import { transactionService } from '../../services/transactions.js';
 import { Modal } from '../ui/Modal.jsx';
 import { TransactionForm } from './TransactionForm.jsx';
+import { useToast } from '../ui/Toast.jsx';
 
 export function TransactionTable({ refreshTrigger }) {
   const [data, setData] = useState([]);
@@ -19,6 +20,7 @@ export function TransactionTable({ refreshTrigger }) {
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
+  const toast = useToast();
 
   // Debounce search
   useEffect(() => {
@@ -35,7 +37,7 @@ export function TransactionTable({ refreshTrigger }) {
   }, [typeFilter, statusFilter]);
 
   // Fetch data
-  const loadTransactions = async () => {
+  const loadTransactions = useCallback(async () => {
     setLoading(true);
     try {
         const params = {
@@ -54,11 +56,11 @@ export function TransactionTable({ refreshTrigger }) {
     } finally {
         setLoading(false);
     }
-  };
+  }, [page, debouncedSearch, typeFilter, statusFilter]);
 
   useEffect(() => {
-    loadTransactions();
-  }, [page, refreshTrigger, debouncedSearch, typeFilter, statusFilter]);
+    void loadTransactions();
+  }, [loadTransactions, refreshTrigger]);
 
   const [editingTransaction, setEditingTransaction] = useState(null);
 
@@ -67,16 +69,23 @@ export function TransactionTable({ refreshTrigger }) {
           await transactionService.update(editingTransaction.id, data);
           setEditingTransaction(null);
           loadTransactions();
+          toast.success('Transaction updated');
       } catch (err) {
           console.error("Failed to update transaction", err);
-          alert("Failed to update transaction");
+          toast.error('Failed to update transaction');
       }
   };
 
   const handleDelete = async (id) => {
       if(confirm('Are you sure you want to delete this transaction?')) {
-          await transactionService.delete(id);
-          loadTransactions();
+          try {
+            await transactionService.delete(id);
+            loadTransactions();
+            toast.success('Transaction deleted');
+          } catch (err) {
+            console.error("Failed to delete transaction", err);
+            toast.error('Failed to delete transaction');
+          }
       }
   };
 
@@ -85,9 +94,10 @@ export function TransactionTable({ refreshTrigger }) {
     try {
       await transactionService.complete(id);
       loadTransactions();
+      toast.success('Transaction marked as paid');
     } catch (err) {
       console.error("Failed to mark as paid", err);
-      alert("Failed to mark transaction as paid");
+      toast.error('Failed to mark transaction as paid');
     }
   };
 

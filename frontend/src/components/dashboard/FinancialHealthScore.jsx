@@ -2,20 +2,22 @@ import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '../ui/Card.jsx';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 
-export function FinancialHealthScore({ score = 75, message, color }) {
+export function FinancialHealthScore({ score = 0, message, color }) {
+  const normalizedScore = Math.max(0, Math.min(100, Number(score || 0)));
+
   // Fallback logic if props aren't provided (for safety)
   let displayColor = color;
   if (!displayColor) {
-     if (score >= 80) displayColor = '#10b981';
-     else if (score >= 60) displayColor = '#3b82f6';
-     else if (score >= 40) displayColor = '#eab308';
+     if (normalizedScore >= 80) displayColor = '#10b981';
+     else if (normalizedScore >= 60) displayColor = '#3b82f6';
+     else if (normalizedScore >= 40) displayColor = '#eab308';
      else displayColor = '#ef4444'; 
   }
 
   // Simple data for the gauge
   const data = [
-    { name: 'Score', value: score },
-    { name: 'Remaining', value: 100 - score },
+    { name: 'Score', value: normalizedScore },
+    { name: 'Remaining', value: 100 - normalizedScore },
   ];
 
   return (
@@ -47,13 +49,13 @@ export function FinancialHealthScore({ score = 75, message, color }) {
         </div>
         
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[20%] text-center">
-            <span className="text-4xl font-bold text-white block">{score}</span>
+            <span className="text-4xl font-bold text-white block">{normalizedScore}</span>
             <span className="text-xs text-zinc-500">OUT OF 100</span>
         </div>
 
         <div className="text-center mt-[-20px] pb-4 px-4">
              <p className="text-zinc-300 text-sm">
-                {message || "Calculating health..."}
+                {message || 'No health score data yet.'}
              </p>
         </div>
       </CardContent>

@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from decimal import Decimal
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.transaction import Transaction
@@ -85,10 +86,12 @@ class HealthScoreCalculator:
                 .filter(Transaction.type == "EXPENSE")
                 .filter(Transaction.occurred_at >= thirty_days_ago)
             )
-            actual_spending = spending_result.scalar() or 0
-            
-            if rule.monthly_limit > 0:
-                ratio = actual_spending / float(rule.monthly_limit)
+            actual_spending = spending_result.scalar() or Decimal("0")
+            monthly_limit = rule.monthly_limit or Decimal("0")
+
+            if monthly_limit > 0:
+                # Keep math in Decimal and convert only final ratio to float for thresholds.
+                ratio = float(actual_spending / monthly_limit)
                 if ratio <= 0.9:  # Under budget by 10%+
                     adherence_scores.append(100)
                 elif ratio <= 1.0:  # Within budget

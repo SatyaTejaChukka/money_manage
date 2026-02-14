@@ -5,6 +5,7 @@ import { Select } from '../ui/Select.jsx';
 
 import { categoryService } from '../../services/categories.js';
 import { Plus, Check } from 'lucide-react';
+import { useToast } from '../ui/Toast.jsx';
 
 export function TransactionForm({ onSubmit, onCancel, initialData = {} }) {
   const [formData, setFormData] = useState({
@@ -25,6 +26,7 @@ export function TransactionForm({ onSubmit, onCancel, initialData = {} }) {
   const [isLoading, setIsLoading] = useState(true);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [isCreatingCategory, setIsCreatingCategory] = useState(false);
+  const toast = useToast();
 
   useEffect(() => {
     loadCategories();
@@ -49,8 +51,9 @@ export function TransactionForm({ onSubmit, onCancel, initialData = {} }) {
           setFormData({ ...formData, category_id: newCat.id });
           setNewCategoryName('');
           setIsCreatingCategory(false);
-      } catch (err) {
-          alert('Failed to create category');
+          toast.success('Category created');
+      } catch {
+          toast.error('Failed to create category');
       }
   };
 

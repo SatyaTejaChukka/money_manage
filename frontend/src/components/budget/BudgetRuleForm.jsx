@@ -4,6 +4,7 @@ import { Button } from '../ui/Button.jsx';
 import { Select } from '../ui/Select.jsx';
 import { categoryService } from '../../services/categories.js';
 import { Plus, Check } from 'lucide-react';
+import { useToast } from '../ui/Toast.jsx';
 
 export function BudgetRuleForm({ onSubmit, onCancel }) {
   const [formData, setFormData] = useState({
@@ -17,6 +18,7 @@ export function BudgetRuleForm({ onSubmit, onCancel }) {
   const [isLoading, setIsLoading] = useState(true);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [isCreatingCategory, setIsCreatingCategory] = useState(false);
+  const toast = useToast();
 
   useEffect(() => {
     loadCategories();
@@ -41,15 +43,16 @@ export function BudgetRuleForm({ onSubmit, onCancel }) {
           setFormData({ ...formData, category_id: newCat.id });
           setNewCategoryName('');
           setIsCreatingCategory(false);
-      } catch (err) {
-          alert('Failed to create category');
+          toast.success('Category created');
+      } catch {
+          toast.error('Failed to create category');
       }
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!formData.category_id) {
-        alert("Please select a category");
+        toast.warning('Please select a category');
         return;
     }
     onSubmit({
@@ -124,7 +127,7 @@ export function BudgetRuleForm({ onSubmit, onCancel }) {
                 required
                 type="number"
                 step="0.01"
-                placeholder={formData.allocation_type === 'PERCENT' ? "e.g. 10 (%)" : "e.g. 500 ($)"}
+                placeholder={formData.allocation_type === 'PERCENT' ? "e.g. 10 (%)" : "e.g. 500 (INR)"}
                 value={formData.allocation_value}
                 onChange={(e) => setFormData({...formData, allocation_value: e.target.value})}
             />

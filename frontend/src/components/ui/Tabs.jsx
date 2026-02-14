@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { cn } from '../../lib/utils';
-import { motion } from 'framer-motion';
 
 export function Tabs({ tabs, defaultTab, onChange, children }) {
   const [activeTab, setActiveTab] = useState(defaultTab || tabs[0]?.id);
@@ -25,10 +24,8 @@ export function Tabs({ tabs, defaultTab, onChange, children }) {
               )}
             >
               {isActive && (
-                <motion.div
-                  layoutId="activeTab"
+                <div
                   className="absolute inset-0 bg-zinc-800 rounded-xl shadow-lg border border-white/5"
-                  transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                 />
               )}
               <span className="relative z-10 flex items-center gap-2">

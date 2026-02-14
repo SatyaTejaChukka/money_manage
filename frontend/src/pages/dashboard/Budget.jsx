@@ -5,12 +5,10 @@ import { budgetService } from '../../services/budgets.js';
 import { Plus, Trash2, AlertCircle } from 'lucide-react';
 import { Modal } from '../../components/ui/Modal.jsx';
 import { BudgetRuleForm } from '../../components/budget/BudgetRuleForm.jsx';
-import { cn } from '../../lib/utils';
 import { useToast } from '../../components/ui/Toast.jsx';
 
 
 export default function Budget() {
-  const [summary, setSummary] = useState(null);
   const [rules, setRules] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -23,10 +21,6 @@ export default function Budget() {
           try {
               const ruleData = await budgetService.getRules();
               setRules(ruleData);
-              // Summary requires month/year, default to current
-              const now = new Date();
-              const sumData = await budgetService.getSummary(now.getMonth() + 1, now.getFullYear());
-              setSummary(sumData);
           } catch (err) {
               console.error(err);
           } finally {
@@ -56,7 +50,7 @@ export default function Budget() {
           setIsModalOpen(false);
           setRefreshTrigger(p => p+1);
           toast.success('Budget rule created');
-      } catch (err) {
+      } catch {
         toast.error('Failed to create rule. Check category ID.');
       }
   };

@@ -10,7 +10,11 @@ from app.core.database import get_db
 from app.models.user import User
 from app.models.budget import BudgetCategory
 from app.models.transaction import Transaction
+from app.models.savings import SavingsGoal
 from app.services.health_score import HealthScoreService
+from app.services.financial_triage import FinancialTriageService
+from app.services.autopilot import AutopilotService
+from app.schemas.triage import FinancialTriageResponse
 from pydantic import BaseModel
 from decimal import Decimal
 
@@ -28,6 +32,7 @@ class DashboardStats(BaseModel):
     recent_transactions: List[dict]
     spending_chart: List[dict]
     category_chart: List[dict]
+    safe_to_spend_stats: dict
 
 @router.get("/summary", response_model=DashboardStats)
 async def get_dashboard_summary(
@@ -50,7 +55,10 @@ async def get_dashboard_summary(
     total_expenses = sum(t.amount for t in all_transactions if t.type == 'EXPENSE')
     total_balance = total_income - total_expenses
     
-    total_savings = Decimal(0)
+    # Calculate total savings from goals
+    savings_query = select(func.sum(SavingsGoal.current_amount)).filter(SavingsGoal.user_id == current_user.id)
+    savings_res = await db.execute(savings_query)
+    total_savings = savings_res.scalar() or Decimal(0)
 
     # 2. Monthly Stats
     monthly_trans = [t for t in all_transactions if t.occurred_at >= start_of_month]
@@ -170,6 +178,11 @@ async def get_dashboard_summary(
         top_categories=category_chart 
     )
 
+    # 7. Autopilot / Safe-to-Spend Stats + Salary Rule Engine
+    safe_to_spend_stats = await AutopilotService.calculate_safe_to_spend(db, current_user.id)
+    salary_rule_engine = await AutopilotService.calculate_salary_rule_split(db, current_user.id)
+    safe_to_spend_stats["salary_rule_engine"] = salary_rule_engine
+
     return {
         "total_balance": total_balance,
         "balance_change": balance_change,
@@ -181,5 +194,17 @@ async def get_dashboard_summary(
         "health_score": health_stats,
         "recent_transactions": recent_mapped,
         "spending_chart": chart_data,
-        "category_chart": category_chart
+        "category_chart": category_chart,
+        "safe_to_spend_stats": safe_to_spend_stats
     }
+
+
+@router.get("/triage", response_model=FinancialTriageResponse)
+async def get_financial_triage(
+    current_user: Annotated[User, Depends(deps.get_current_user)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> FinancialTriageResponse:
+    """
+    Return prioritized cleanup actions for the user's current financial situation.
+    """
+    return await FinancialTriageService.generate(db, current_user.id)

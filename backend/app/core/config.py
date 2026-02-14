@@ -76,6 +76,14 @@ class Settings(BaseSettings):
     SENTRY_DSN: str | None = None
     REDIS_URL: str = "redis://redis:6379/0"
 
+    # Payments / Autopilot
+    PAYMENTS_PROVIDER: str = "internal_ledger"
+    PAYMENTS_PROVIDER_BASE_URL: str | None = None
+    PAYMENTS_PROVIDER_API_KEY: str | None = None
+    PAYMENTS_PROVIDER_API_SECRET: str | None = None
+    PAYMENTS_AUTO_EXECUTE_ON_APPROVAL: bool = True
+    AUTOPILOT_PAYMENT_PREPARE_DAYS: int = 7
+
     @field_validator("DATABASE_URL", mode="before")
     @classmethod
     def assemble_db_connection(cls, v: str | None, info: ValidationInfo) -> str | PostgresDsn:

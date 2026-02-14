@@ -1,8 +1,18 @@
 import * as React from "react"
 import { cn } from "../../lib/utils"
-// import { Slot } from "@radix-ui/react-slot" // If using Radix, but let's stick to simple for now or assume Slot is not needed yet unless requested. Use simple button.
 
-const Button = React.forwardRef(({ className, variant = "default", size = "default", ...props }, ref) => {
+const Button = React.forwardRef(({
+  className,
+  variant = "default",
+  size = "default",
+  fullWidth = false,
+  isLoading = false,
+  icon,
+  iconPosition = "left",
+  children,
+  disabled,
+  ...props
+}, ref) => {
   const variants = {
     default: "bg-primary text-primary-foreground shadow hover:bg-primary/90 hover:glow transition-all duration-300",
     destructive: "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90",
@@ -25,13 +35,26 @@ const Button = React.forwardRef(({ className, variant = "default", size = "defau
     <button
       className={cn(
         "inline-flex items-center justify-center whitespace-nowrap rounded-xl text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+        fullWidth && "w-full",
         variants[variant],
         sizes[size],
         className
       )}
       ref={ref}
+      disabled={disabled || isLoading}
       {...props}
-    />
+    >
+      {isLoading && (
+        <span className="mr-2 inline-flex h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+      )}
+      {!isLoading && icon && iconPosition === "left" && (
+        <span className="mr-2 inline-flex items-center">{icon}</span>
+      )}
+      <span className={cn(isLoading && "opacity-90")}>{children}</span>
+      {!isLoading && icon && iconPosition === "right" && (
+        <span className="ml-2 inline-flex items-center">{icon}</span>
+      )}
+    </button>
   )
 })
 Button.displayName = "Button"

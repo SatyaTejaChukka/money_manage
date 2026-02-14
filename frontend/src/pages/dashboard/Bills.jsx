@@ -3,10 +3,9 @@ import { Button } from '../../components/ui/Button.jsx';
 import { Modal } from '../../components/ui/Modal.jsx';
 import { Input } from '../../components/ui/Input.jsx';
 import { Select } from '../../components/ui/Select.jsx';
-import { Plus, Edit, Trash2, CheckCircle, Calendar } from 'lucide-react';
+import { Plus, Edit, Trash2, CheckCircle, CircleX, Calendar } from 'lucide-react';
 import { billService } from '../../services/bills.js';
 import { categoryService } from '../../services/categories.js';
-import { cn } from '../../lib/utils';
 import { useToast } from '../../components/ui/Toast.jsx';
 
 export default function Bills() {
@@ -103,20 +102,29 @@ export default function Bills() {
       }
     }
   };
+  const handleTogglePaid = async (bill) => {
+    const currentlyPaid = Boolean(bill.last_paid_at);
 
-  const handleMarkPaid = async (id) => {
-    // Optimistic update — mark as paid in UI immediately
+    // Optimistic update first so the UI reacts instantly.
     setBills((prev) =>
-      prev.map((bill) =>
-        bill.id === id ? { ...bill, last_paid_at: new Date().toISOString() } : bill
+      prev.map((item) =>
+        item.id === bill.id
+          ? { ...item, last_paid_at: currentlyPaid ? null : new Date().toISOString() }
+          : item
       )
     );
+
     try {
-      await billService.markPaid(id);
-      toast.success('Bill marked as paid');
+      if (currentlyPaid) {
+        await billService.markUnpaid(bill.id);
+        toast.error('Bill is marked as unpaid');
+      } else {
+        await billService.markPaid(bill.id);
+        toast.success('Bill is marked as paid');
+      }
     } catch (err) {
-      console.error('Failed to mark as paid', err);
-      toast.error('Failed to mark bill as paid');
+      console.error('Failed to toggle bill payment status', err);
+      toast.error('Failed to update bill status');
       loadBills();
     }
   };
@@ -180,10 +188,19 @@ export default function Bills() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-8 px-3 text-emerald-400 hover:bg-emerald-500/10 flex-1"
-                  onClick={() => handleMarkPaid(bill.id)}
+                  className={`h-8 px-3 flex-1 ${
+                    bill.last_paid_at
+                      ? 'text-emerald-400 hover:bg-emerald-500/10'
+                      : 'text-rose-400 hover:bg-rose-500/10'
+                  }`}
+                  onClick={() => handleTogglePaid(bill)}
                 >
-                  <CheckCircle size={14} className="mr-1" /> Paid
+                  {bill.last_paid_at ? (
+                    <CheckCircle size={14} className="mr-1" />
+                  ) : (
+                    <CircleX size={14} className="mr-1" />
+                  )}
+                  {bill.last_paid_at ? 'Paid' : 'Unpaid'}
                 </Button>
                 <Button
                   variant="ghost"
@@ -267,11 +284,19 @@ export default function Bills() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-8 px-3 text-emerald-400 hover:bg-emerald-500/10 mr-2"
-                        onClick={() => handleMarkPaid(bill.id)}
+                        className={`h-8 px-3 mr-2 ${
+                          bill.last_paid_at
+                            ? 'text-emerald-400 hover:bg-emerald-500/10'
+                            : 'text-rose-400 hover:bg-rose-500/10'
+                        }`}
+                        onClick={() => handleTogglePaid(bill)}
                       >
-                        <CheckCircle size={14} className="mr-1" />
-                        Paid
+                        {bill.last_paid_at ? (
+                          <CheckCircle size={14} className="mr-1" />
+                        ) : (
+                          <CircleX size={14} className="mr-1" />
+                        )}
+                        {bill.last_paid_at ? 'Paid' : 'Unpaid'}
                       </Button>
                       <Button
                         variant="ghost"
@@ -391,3 +416,4 @@ export default function Bills() {
     </div>
   );
 }
+

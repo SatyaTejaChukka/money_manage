@@ -53,7 +53,6 @@ export default function Login() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-black px-4 relative overflow-hidden">
-      {/* Animated gradient orbs */}
       <div className="absolute top-0 -left-20 w-96 h-96 bg-violet-600/20 rounded-full mix-blend-screen filter blur-3xl animate-pulse" />
       <div className="absolute bottom-0 -right-20 w-96 h-96 bg-indigo-600/20 rounded-full mix-blend-screen filter blur-3xl animate-pulse delay-1000" />
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-purple-600/10 rounded-full mix-blend-screen filter blur-3xl animate-pulse delay-500" />
@@ -64,18 +63,17 @@ export default function Login() {
             <div className="w-12 h-12 rounded-xl bg-linear-to-r from-violet-600 to-indigo-600 flex items-center justify-center shadow-xl shadow-violet-500/30">
               <TrendingUp className="text-white" size={24} />
             </div>
-            <span className="text-3xl font-bold bg-linear-to-r from-white to-zinc-300 bg-clip-text text-transparent">WealthSync</span>
+            <span className="text-3xl font-bold bg-linear-to-r from-white to-zinc-300 bg-clip-text text-transparent">
+              WealthSync
+            </span>
           </Link>
           <h1 className="text-2xl font-bold text-white mb-2">Welcome back!</h1>
           <p className="text-zinc-400">Sign in to continue</p>
         </div>
 
-        {/* Glassmorphism card with gradient border */}
         <div className="relative group">
-          {/* Gradient border effect */}
-          <div className="absolute -inset-0.5 bg-linear-to-r from-violet-600 to-indigo-600 rounded-2xl blur opacity-30 group-hover:opacity-50 transition duration-1000"></div>
-          
-          {/* Main card */}
+          <div className="absolute -inset-0.5 bg-linear-to-r from-violet-600 to-indigo-600 rounded-2xl blur opacity-30 group-hover:opacity-50 transition duration-1000" />
+
           <div className="relative bg-zinc-900/70 backdrop-blur-xl rounded-2xl shadow-2xl p-8 sm:p-10 border border-zinc-800/50 animate-fadeIn">
             <form onSubmit={handleSubmit} className="space-y-6">
               {error && <Alert type="error" message={error} onClose={() => setError('')} />}
@@ -109,7 +107,7 @@ export default function Login() {
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
+                    placeholder="********"
                     required
                     className="pl-12 bg-zinc-800/50 backdrop-blur-sm border-zinc-700/50 text-white placeholder:text-zinc-500 focus:border-violet-500/50 focus:ring-violet-500/20"
                   />
@@ -140,8 +138,11 @@ export default function Login() {
           </div>
         </div>
 
-        <p className="text-center text-sm text-zinc-500 mt-6">By continuing, you agree to our Terms and Privacy Policy</p>
+        <p className="text-center text-sm text-zinc-500 mt-6">
+          By continuing, you agree to our Terms and Privacy Policy
+        </p>
       </div>
     </div>
   );
 }
+

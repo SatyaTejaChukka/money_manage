@@ -5,7 +5,6 @@ import { goalService } from '../../services/goals.js';
 import { Plus, Target, Trash2, Calendar } from 'lucide-react';
 import { Modal } from '../../components/ui/Modal.jsx';
 import { GoalForm } from '../../components/goals/GoalForm.jsx';
-import { cn } from '../../lib/utils';
 import { useToast } from '../../components/ui/Toast.jsx';
 
 function ProgressBar({ current, target }) {
@@ -106,7 +105,7 @@ export default function Goals() {
 		  setIsModalOpen(false);
 		  setRefreshTrigger(p => p+1);
 		  toast.success('Goal created successfully');
-	  } catch (err) {
+	  } catch {
 		  toast.error('Failed to create goal');
 	  }
   };

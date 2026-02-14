@@ -2,6 +2,7 @@ from typing import Any, List, Annotated
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy.orm import selectinload
 from uuid import uuid4
 
 from app.api import deps
@@ -28,7 +29,6 @@ async def create_subscription(
     await db.refresh(sub)
     
     # Load subscription with category relationship
-    from sqlalchemy.orm import selectinload
     result = await db.execute(
         select(Subscription).options(selectinload(Subscription.category)).where(Subscription.id == sub.id)
     )
@@ -40,7 +40,6 @@ async def read_subscriptions(
     current_user: Annotated[User, Depends(deps.get_current_user)],
     db: Annotated[AsyncSession, Depends(get_db)]
 ) -> Any:
-    from sqlalchemy.orm import selectinload
     result = await db.execute(
         select(Subscription).options(selectinload(Subscription.category)).filter(Subscription.user_id == current_user.id)
     )
@@ -64,6 +63,12 @@ async def update_subscription(
     db.add(sub)
     await db.commit()
     await db.refresh(sub)
+
+    # Reload with category relationship
+    result = await db.execute(
+        select(Subscription).options(selectinload(Subscription.category)).where(Subscription.id == sub.id)
+    )
+    sub = result.scalar_one()
     return sub
 
 @router.delete("/{sub_id}", response_model=SubscriptionResponse)
@@ -72,7 +77,9 @@ async def delete_subscription(
     current_user: Annotated[User, Depends(deps.get_current_user)],
     db: Annotated[AsyncSession, Depends(get_db)]
 ) -> Any:
-    result = await db.execute(select(Subscription).filter(Subscription.id == sub_id, Subscription.user_id == current_user.id))
+    result = await db.execute(
+        select(Subscription).options(selectinload(Subscription.category)).filter(Subscription.id == sub_id, Subscription.user_id == current_user.id)
+    )
     sub = result.scalars().first()
     if not sub:
         raise HTTPException(status_code=404, detail="Subscription not found")
@@ -87,7 +94,9 @@ async def log_usage(
     current_user: Annotated[User, Depends(deps.get_current_user)],
     db: Annotated[AsyncSession, Depends(get_db)]
 ) -> Any:
-    result = await db.execute(select(Subscription).filter(Subscription.id == sub_id, Subscription.user_id == current_user.id))
+    result = await db.execute(
+        select(Subscription).options(selectinload(Subscription.category)).filter(Subscription.id == sub_id, Subscription.user_id == current_user.id)
+    )
     sub = result.scalars().first()
     if not sub:
         raise HTTPException(status_code=404, detail="Subscription not found")
@@ -96,4 +105,10 @@ async def log_usage(
     db.add(sub)
     await db.commit()
     await db.refresh(sub)
+
+    # Reload with category relationship
+    result = await db.execute(
+        select(Subscription).options(selectinload(Subscription.category)).where(Subscription.id == sub.id)
+    )
+    sub = result.scalar_one()
     return sub

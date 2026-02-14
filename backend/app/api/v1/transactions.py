@@ -49,6 +49,7 @@ async def read_transactions(
     skip: int = 0,
     limit: int = 100,
     type: Optional[str] = None,
+    status: Optional[str] = None,
     search: Optional[str] = None
 ) -> Any:
     """
@@ -58,6 +59,9 @@ async def read_transactions(
     
     if type:
         query = query.filter(Transaction.type == type)
+
+    if status:
+        query = query.filter(Transaction.status == status)
         
     if search:
         query = query.filter(Transaction.description.ilike(f"%{search}%"))
